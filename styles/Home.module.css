@@ -87,6 +87,11 @@
   height: 500px;
 }
 
+.cardInfo {
+  display: flex;
+  justify-content: space-between;
+}
+
 .card:hover,
 .card:focus,
 .card:active {

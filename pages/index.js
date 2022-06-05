@@ -15,7 +15,9 @@ const Dog = ({hash}) => {
     return <div>loading</div>;
   }
 
-  const parameters = data.find(({entrypoint}) => entrypoint === 'reveal').parameters;
+  const reveal = data.find(({entrypoint}) => entrypoint === 'reveal');
+  const parameters = reveal.parameters;
+  const revealDateTime = new Date(reveal.timestamp).toLocaleString();
   const metadata = parameters[0].children.find(({name}) => name ==='metadata');
   const tokenId = parameters[0].children.find(({name}) => name ==='token_id').value;
   const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`
@@ -34,8 +36,9 @@ return (
       camera-controls enable-pan
       className={styles.modelViewer}>
     </model-viewer>
-    <div>
+    <div className={styles.cardInfo}>
       <a href={dogUrlMarketplace}>{dogUrlMarketplace}</a>
+      <div>{revealDateTime}</div>
     </div>
   </div>
   )
@@ -47,6 +50,7 @@ export default function Home() {
   if(!data) {
     return <div>loading</div>;
   }
+
   const hashReveal = data.operations.filter(op => op.entrypoint === 'reveal').map(op => op.hash);
    
   const dogs = hashReveal.map(hash => <Dog key={hash} hash={hash}/>)
