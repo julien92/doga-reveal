@@ -1,9 +1,61 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import useSWR from 'swr'
+import Script from 'next/script'
+import { stringifyQuery } from 'next/dist/server/server-route-utils'
+
+const fetcher = (...args) => fetch(...args).then(res => res.json())
+
+const Dog = ({hash}) => {
+  const url = `https://api.better-call.dev/v1/opg/${hash}?with_mempool=false`
+  const { data, error } = useSWR(url, fetcher)
+
+  if(!data) {
+    return <div>loading</div>;
+  }
+
+  const parameters = data.find(({entrypoint}) => entrypoint === 'reveal').parameters;
+  const metadata = parameters[0].children.find(({name}) => name ==='metadata');
+  const tokenId = parameters[0].children.find(({name}) => name ==='token_id').value;
+  const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`
+
+  const artifactUri = metadata.children.find(({name}) => name ==='artifactUri').value;
+  const hashIpfs = artifactUri.replace('ipfs://','');
+  const displayArtifactUri = `https://nft-zzz.mypinata.cloud/ipfs/${hashIpfs}`
+
+return (
+
+  <div className={styles.card}>
+    <model-viewer alt="dog" 
+      src={displayArtifactUri} 
+      ar ar-modes="webxr scene-viewer quick-look" 
+      seamless-poster shadow-intensity="1"
+      camera-controls enable-pan
+      className={styles.modelViewer}>
+    </model-viewer>
+    <div>
+      <a href={dogUrlMarketplace}>{dogUrlMarketplace}</a>
+    </div>
+  </div>
+  )
+}
 
 export default function Home() {
+  const { data, error } = useSWR('https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?with_storage_diff=false', fetcher,  { refreshInterval: 30000 })
+
+  if(!data) {
+    return <div>loading</div>;
+  }
+  const hashReveal = data.operations.filter(op => op.entrypoint === 'reveal').map(op => op.hash);
+   
+  const dogs = hashReveal.map(hash => <Dog key={hash} hash={hash}/>)
+
+  'https://api.better-call.dev/v1/opg/ongEKgZRbxcoiHUZeqd2DyvSYHRwZJpXZXcsr5MEtPSBEJCjRzh?with_mempool=false'
+  
   return (
+    <>
+    <Script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js" />
     <div className={styles.container}>
       <Head>
         <title>Create Next App</title>
@@ -13,42 +65,11 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          DogaReveal
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+            {dogs}
         </div>
       </main>
 
@@ -65,5 +86,6 @@ export default function Home() {
         </a>
       </footer>
     </div>
+    </>
   )
 }
