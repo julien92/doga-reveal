@@ -1,10 +1,10 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-import useSWR, { SWRConfig } from 'swr'
+import useSWR, { Fetcher, SWRConfig } from 'swr'
 import Script from 'next/script'
 
-const fetcher = (...args) => fetch(...args).then(res => res.json())
+const fetcher: Fetcher<any,any> = url => fetch(url).then(r => r.json())
 
 const Owner = ({tokenId}) => {
   const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&value=${tokenId}`
