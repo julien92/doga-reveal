@@ -100,6 +100,7 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -112,6 +113,16 @@
   box-shadow: 0 0.5rem 1rem rgba(0 0 0 / 25%);
 }
 
+.card .tokenId {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: rgba(255 255 255 / 60%);
+  line-height: 1;
+  font-weight: 600;
+  z-index: 1;
+}
+
 .cardInfo {
   display: flex;
   flex-direction: column;
@@ -119,6 +130,11 @@
   padding: 0.5rem;
   background-color: var(--purple);
   color: var(--white);
+}
+
+.cardInfo h3 {
+  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
 }
 
 .cardLoading {
