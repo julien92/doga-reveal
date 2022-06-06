@@ -43,6 +43,9 @@ const Dog = ({hash}) => {
   const tokenId = parameters[0].children.find(({name}) => name ==='token_id').value;
   const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`
 
+  const attributes = metadata.children.find(({name}) => name ==='attributes').children;
+  const rarityScore = attributes.find(({name}) => name ==='n').value;
+
   const artifactUri = metadata.children.find(({name}) => name ==='artifactUri').value;
   const hashIpfs = artifactUri.replace('ipfs://','');
   const displayArtifactUri = `https://nft-zzz.mypinata.cloud/ipfs/${hashIpfs}`
@@ -59,6 +62,7 @@ return (
     </model-viewer>
     <div className={styles.cardInfo}>
       <a href={dogUrlMarketplace}>{dogUrlMarketplace}</a>
+      <div>RS : {rarityScore}</div>
       <div>{revealDateTime}</div>
     </div>
   </div>
