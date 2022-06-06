@@ -45,6 +45,8 @@ const Dog = ({hash}) => {
 
   const attributes = metadata.children.find(({name}) => name ==='attributes').children;
   const rarityScore = attributes.find(({name}) => name ==='n').value;
+  const sexe = attributes.find(({name}) => name ==='h').value;
+
 
   const artifactUri = metadata.children.find(({name}) => name ==='artifactUri').value;
   const hashIpfs = artifactUri.replace('ipfs://','');
@@ -62,6 +64,7 @@ return (
     </model-viewer>
     <div className={styles.cardInfo}>
       <a href={dogUrlMarketplace}>{dogUrlMarketplace}</a>
+      <div>{sexe}</div>
       <div>RS : {rarityScore}</div>
       <div>{revealDateTime}</div>
     </div>
