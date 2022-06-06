@@ -6,15 +6,31 @@ import Script from 'next/script'
 
 const fetcher = (...args) => fetch(...args).then(res => res.json())
 
+const Owner = ({tokenId}) => {
+  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&value=${tokenId}`
+  const { data: assignMetadataOp } = useSWR(queryUrl, fetcher)
+
+  
+  if(!assignMetadataOp ) {
+    return <div></div>;
+  }
+
+  console.log('owner');
+  console.log(assignMetadataOp);
+  const operationUnboxing = assignMetadataOp[0];
+  console.log(operationUnboxing);
+  const ownerAddress = operationUnboxing.sender.address;
+  console.log('Owner address ', ownerAddress)
+  const revealDateTime = new Date(operationUnboxing.timestamp).toLocaleString();
+  return ( 
+      <div>Unboxing asked at : {revealDateTime}</div>
+    )
+}
+
 const Delay = () => {
-  const url = 'https://api.tzkt.io/v1/accounts/tz1iU8MyJN2xdbcz3CooENLEXaPw2wZLk6EF/operations?type=transaction,reveal&lastId=248217089&limit=40&sort=1&quote=usd';
-  const { data: page1 } = useSWR(url, fetcher)
-
   const { data: operations } = useSWR('https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false', fetcher)
-  const { data: revealOperations } = useSWR('https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=origination,transaction&limit=1000&sort=1&quote=usd', fetcher)
 
-
-  if(!operations || !revealOperations) {
+  if(!operations ) {
     return <h2>Delay</h2>;
   }
 
@@ -22,17 +38,13 @@ const Delay = () => {
   const lastTokenId = lastOp.parameters[0].children.find(({name}) => name ==='token_id').value
   console.log(lastOp);
   console.log(lastTokenId)
+  const tzAddress = "tz1LQS9RUauAPnXSo6fGh69X15fyEqjuL1SG";
 
-  console.log(revealOperations);
-  const operationUnboxing = revealOperations.filter(op => op.parameter.entrypoint === "assignMetadata" && op.parameter.value === lastTokenId)[0];
-  console.log(operationUnboxing);
-  const ownerAddress = operationUnboxing.sender.address;
-  const revealDateTime = new Date(operationUnboxing.timestamp).toLocaleString();
 
   return ( 
   <h2>
     <div>Last assign : {lastTokenId}</div>
-    <div>Unboxing asked at : {revealDateTime}</div>
+    <Owner tokenId={lastTokenId}/>
   </h2>
   )
 }
