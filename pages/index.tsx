@@ -1,163 +1,172 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import useSWR, { Fetcher, SWRConfig } from 'swr'
-import Script from 'next/script'
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
+import useSWR, { Fetcher, SWRConfig } from "swr";
+import Script from "next/script";
+import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowUpRightFromSquare,
+  faEllipsis,
+} from "@fortawesome/free-solid-svg-icons";
 
-const fetcher: Fetcher<any,any> = url => fetch(url).then(r => r.json())
-
-const Owner = ({tokenId}) => {
-  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&value=${tokenId}`
-  const { data: assignMetadataOp } = useSWR(queryUrl, fetcher)
-
-  
-  if(!assignMetadataOp ) {
-    return <div></div>;
-  }
-
-  console.log('owner');
-  console.log(assignMetadataOp);
-  const operationUnboxing = assignMetadataOp[0];
-  console.log(operationUnboxing);
-  const ownerAddress = operationUnboxing.sender.address;
-  console.log('Owner address ', ownerAddress)
-  const revealDateTime = new Date(operationUnboxing.timestamp).toLocaleString();
-  return ( 
-      <div>Unboxing asked at : {revealDateTime}</div>
-    )
+interface FAIconProps {
+  icon: IconDefinition;
+  size?: number;
 }
 
-const Delay = () => {
-  const { data: operations } = useSWR('https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false', fetcher)
+const FAIcon = ({ icon, size = 24 }: FAIconProps) => (
+  <FontAwesomeIcon width={size} height={size} icon={icon} />
+);
 
-  if(!operations ) {
-    return <h2>Delay</h2>;
+const fetcher: Fetcher<any, any> = (url) => fetch(url).then((r) => r.json());
+
+const RevealRequestTime = ({ tokenId }) => {
+  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata`;
+  const { data } = useSWR(queryUrl, fetcher);
+
+  if (!data) {
+    return null;
   }
 
-  const lastOp = operations.operations.filter(op => op.entrypoint === 'reveal')[0];
-  const lastTokenId = lastOp.parameters[0].children.find(({name}) => name ==='token_id').value
-  console.log(lastOp);
-  console.log(lastTokenId)
-  const tzAddress = "tz1LQS9RUauAPnXSo6fGh69X15fyEqjuL1SG";
+  const operationUnboxing = data.find(
+    ({ parameter }) => parameter.value === tokenId
+  );
+  // const ownerAddress = operationUnboxing.sender.address;
+  const unboxingTime = new Date(operationUnboxing.timestamp).toLocaleString();
+  return <>{unboxingTime}</>;
+};
 
+const Dog = ({ hash }) => {
+  const url = `https://api.better-call.dev/v1/opg/${hash}?with_mempool=false`;
+  const { data, error } = useSWR(url, fetcher);
 
-  return ( 
-  <h2>
-    <div>Last assign : {lastTokenId}</div>
-    <Owner tokenId={lastTokenId}/>
-  </h2>
-  )
-}
-
-const Dogs = () => {
-  const url = 'https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false';
-  const { data: page1 } = useSWR(url, fetcher)
-  const { data: page2 } = useSWR(() => url + '&last_id=' +  page1.last_id, fetcher)
-
-  if(!page2) {
-    return <div>loading</div>;
+  if (!data) {
+    return (
+      <div className={styles.cardLoading}>
+        <FAIcon icon={faEllipsis} size={32} />
+      </div>
+    );
   }
 
-  const operations = [...page1.operations, ...page2.operations]
-
-  const hashReveal = operations.filter(op => op.entrypoint === 'reveal').map(op => op.hash);
-   
-  const dogs = hashReveal.map(hash => <Dog key={hash} hash={hash}/>)
-
-  return  (
-    <>
-    {dogs}
-    </>
-    )
-}
-
-const Dog = ({hash}) => {
-  const url = `https://api.better-call.dev/v1/opg/${hash}?with_mempool=false`
-  const { data, error } = useSWR(url, fetcher)
-
-  if(!data) {
-    return <div className={styles.card}>loading</div>;
-  }
-
-  const reveal = data.find(({entrypoint}) => entrypoint === 'reveal');
+  const reveal = data.find(({ entrypoint }) => entrypoint === "reveal");
   const parameters = reveal.parameters;
   const revealDateTime = new Date(reveal.timestamp).toLocaleString();
-  const metadata = parameters[0].children.find(({name}) => name ==='metadata');
-  const tokenId = parameters[0].children.find(({name}) => name ==='token_id').value;
-  const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`
+  const metadata = parameters[0].children.find(
+    ({ name }) => name === "metadata"
+  );
+  const tokenId = parameters[0].children.find(
+    ({ name }) => name === "token_id"
+  ).value;
+  const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`;
 
-  const attributes = metadata.children.find(({name}) => name ==='attributes').children;
-  const rarityScore = attributes.find(({name}) => name ==='n').value;
-  const sexe = attributes.find(({name}) => name ==='h').value;
+  const attributes = metadata.children.find(
+    ({ name }) => name === "attributes"
+  ).children;
+  const rarityScore = attributes.find(({ name }) => name === "n").value;
+  const sexe = attributes.find(({ name }) => name === "h").value;
 
+  const artifactUri = metadata.children.find(
+    ({ name }) => name === "thumbnailUri"
+  ).value;
+  const hashIpfs = artifactUri.replace("ipfs://", "");
+  const displayArtifactUri = `https://nft-zzz.mypinata.cloud/ipfs/${hashIpfs}`;
 
-  const artifactUri = metadata.children.find(({name}) => name ==='artifactUri').value;
-  const hashIpfs = artifactUri.replace('ipfs://','');
-  const displayArtifactUri = `https://nft-zzz.mypinata.cloud/ipfs/${hashIpfs}`
-
-return (
-
-  <div className={styles.card}>
-    <model-viewer alt="dog" 
-      src={displayArtifactUri} 
-      ar ar-modes="webxr scene-viewer quick-look" 
-      seamless-poster shadow-intensity="1"
-      camera-controls enable-pan
-      className={styles.modelViewer}>
-    </model-viewer>
-    <div className={styles.cardInfo}>
-      <a href={dogUrlMarketplace}>{dogUrlMarketplace}</a>
-      <div>{sexe}</div>
-      <div>RS : {rarityScore}</div>
-      <div>{revealDateTime}</div>
+  return (
+    <div className={styles.card}>
+      <Image src={displayArtifactUri} alt="" width={350} height={350} />
+      <div className={styles.cardInfo}>
+        <ul className={styles.infoList}>
+          <li>
+            <strong>Sexe:</strong>
+            <span>{sexe}</span>
+          </li>
+          <li>
+            <strong>Rarity:</strong>
+            <span>{rarityScore}</span>
+          </li>
+          <li>
+            <strong>Reveal Request Time:</strong>
+            <span>
+              <RevealRequestTime tokenId={tokenId} />
+            </span>
+          </li>
+          <li>
+            <strong>Reveal Time:</strong>
+            <span>{revealDateTime}</span>
+          </li>
+        </ul>
+        <a className={styles.link} href={dogUrlMarketplace}>
+          Marketplace <FAIcon icon={faArrowUpRightFromSquare} size={16} />
+        </a>
+      </div>
     </div>
-  </div>
-  )
-}
+  );
+};
+
+const Dogs = () => {
+  const url =
+    "https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false";
+  const { data: page1 } = useSWR(url, fetcher);
+  const { data: page2 } = useSWR(
+    () => url + "&last_id=" + page1.last_id,
+    fetcher
+  );
+
+  if (!page2) {
+    return null;
+  }
+
+  const operations = [...page1.operations, ...page2.operations];
+
+  const hashReveal = operations
+    .filter((op) => op.entrypoint === "reveal")
+    .map((op) => op.hash);
+
+  const dogs = hashReveal.map((hash) => <Dog key={hash} hash={hash} />);
+
+  return <>{dogs}</>;
+};
 
 export default function Home() {
- 
-  
   return (
     <>
-    <Script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js" />
+      <Script
+        type="module"
+        src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+      />
       <div className={styles.container}>
         <Head>
           <title>Create Next App</title>
           <meta name="description" content="Generated by create next app" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <SWRConfig 
-                value={{
-                  refreshInterval: 15000,
-                  fetcher: (resource, init) => fetch(resource, init).then(res => res.json())
-                }}
+        <SWRConfig
+          value={{
+            refreshInterval: 3000,
+            fetcher: (resource, init) =>
+              fetch(resource, init).then((res) => res.json()),
+          }}
         >
-        <main className={styles.main}>
-          <h1 className={styles.title}>
-            DogaReveal
-          </h1>
-          <Delay/>
+          <main className={styles.main}>
+            <h1 className={styles.title}>DogaReveal</h1>
 
-          <div className={styles.grid}>
-              <Dogs/>
-          </div>
-        </main>
+            <div className={styles.grid}>
+              <Dogs />
+            </div>
+          </main>
         </SWRConfig>
-     
+
         <footer className={styles.footer}>
           <a
             href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Powered by{' '}
-            <span className={styles.logo}>
-              <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-            </span>
+            Made by Dare
           </a>
         </footer>
       </div>
     </>
-  )
+  );
 }

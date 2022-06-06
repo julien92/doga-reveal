@@ -14,3 +14,9 @@ a {
 * {
   box-sizing: border-box;
 }
+
+:root {
+  --white: rgba(255 255 255 / 100%);
+  --purple: rgb(58 15 120 / 100%);
+  --purple-dark: rgb(27 3 54 / 100%);
+}
