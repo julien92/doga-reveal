@@ -10,7 +10,7 @@ const Delay = () => {
   const url = 'https://api.tzkt.io/v1/accounts/tz1iU8MyJN2xdbcz3CooENLEXaPw2wZLk6EF/operations?type=transaction,reveal&lastId=248217089&limit=40&sort=1&quote=usd';
   const { data: page1 } = useSWR(url, fetcher)
 
-  const { data: operations } = useSWR('https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?with_storage_diff=false', fetcher)
+  const { data: operations } = useSWR('https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false', fetcher)
   const { data: revealOperations } = useSWR('https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=origination,transaction&limit=1000&sort=1&quote=usd', fetcher)
 
 
@@ -38,7 +38,7 @@ const Delay = () => {
 }
 
 const Dogs = () => {
-  const url = 'https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?with_storage_diff=false';
+  const url = 'https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false';
   const { data: page1 } = useSWR(url, fetcher)
   const { data: page2 } = useSWR(() => url + '&last_id=' +  page1.last_id, fetcher)
 
