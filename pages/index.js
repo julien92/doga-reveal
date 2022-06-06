@@ -64,7 +64,7 @@ const Dog = ({hash}) => {
   const { data, error } = useSWR(url, fetcher)
 
   if(!data) {
-    return <div>loading</div>;
+    return <div className={styles.card}>loading</div>;
   }
 
   const reveal = data.find(({entrypoint}) => entrypoint === 'reveal');
