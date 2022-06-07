@@ -1,7 +1,11 @@
 import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
+
 import useSWR, { Fetcher, SWRConfig } from "swr";
+import useSWRInfinite from "swr/infinite";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -19,11 +23,18 @@ import {
   faMars,
   faVenus,
 } from "@fortawesome/free-solid-svg-icons";
+import React from "react";
 
 const { encode, decode } = require("./");
 interface FAIconProps {
   icon: IconDefinition;
   size?: number;
+}
+
+interface Series {
+  minId: number;
+  maxId: number;
+  supply: number;
 }
 
 const FAIcon = ({ icon, size = 24 }: FAIconProps) => (
@@ -41,7 +52,7 @@ const Sex = ({ sex }: { sex: "Male" | "Female" }) => {
 };
 
 const RevealRequestTime = ({ tokenId }) => {
-  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&limit=100`;
+  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
   const { data } = useSWR(queryUrl, fetcher);
 
   if (!data) {
@@ -51,6 +62,11 @@ const RevealRequestTime = ({ tokenId }) => {
   const operationUnboxing = data.find(
     ({ parameter }) => parameter.value === tokenId
   );
+
+  if (!operationUnboxing) {
+    console.log("Operation unboxing not found");
+    return null;
+  }
   // const ownerAddress = operationUnboxing.sender.address;
   const unboxingTime = new Date(operationUnboxing.timestamp).toLocaleString();
   return <>{unboxingTime}</>;
@@ -120,62 +136,59 @@ const Dog = ({ operation }) => {
   );
 };
 
-const Stats = () => {
-  const url =
-    "https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000";
-  const { data: page1 } = useSWR(url, fetcher);
-  const { data: page2 } = useSWR(
-    () => url + "&lastId=" + page1[page1.length - 1].id,
-    fetcher
-  );
-  const { data: page3 } = useSWR(
-    () => url + "&lastId=" + page2[page2.length - 1].id,
-    fetcher
-  );
-  const { data: page4 } = useSWR(
-    () => url + "&lastId=" + page3[page3.length - 1].id,
-    fetcher
-  );
-  const { data: page5 } = useSWR(
-    () => url + "&lastId=" + page4[page4.length - 1].id,
-    fetcher
-  );
-  const { data: page6 } = useSWR(
-    () => url + "&lastId=" + page5[page5.length - 1].id,
-    fetcher
-  );
-  const { data: page7 } = useSWR(
-    () => url + "&lastId=" + page6[page6.length - 1].id,
-    fetcher
+const Stats = ({ minId, maxId, supply }: Series) => {
+  const initialSize = 9;
+
+  const { data } = useSWRInfinite(
+    (pageIndex, previousPageData) => {
+      console.log("pageIndex --", pageIndex);
+      console.log("minId", maxId);
+      console.log("maxId", maxId);
+      // reached the end
+      if (previousPageData && !previousPageData.length) {
+        console.log("reached the end");
+        return null;
+      }
+      console.log("previousPageData", previousPageData);
+      // first page, we don't have `previousPageData`
+      if (pageIndex === 0)
+        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+
+      // add the cursor to the API endpoint
+      return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
+      &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
+        previousPageData[previousPageData.length - 1].id
+      }`;
+    },
+    fetcher,
+    { initialSize }
   );
 
-  if (!page7) {
+  console.log(data);
+  if (!data) {
     return null;
   }
 
-  const threesold = 8000;
+  const operations = data.flatMap((op) => op).reverse();
+  const totalRevealed = operations.length;
+  console.log("Total already revealed", totalRevealed);
 
-  const operations = [
-    ...page1,
-    ...page2,
-    ...page3,
-    ...page4,
-    ...page5,
-    ...page6,
-    ...page7,
-  ].filter((op) => op.parameter.value.token_id <= threesold);
-
-  let diamantCounter = 0;
+  let diamondCounter = 0;
   let goldCounter = 0;
   let silverCounter = 0;
   let bronzeCounter = 0;
+
+  const totalDiams = (supply * 2) / 100;
+  const totalGold = (supply * 8) / 100;
+  const totalSilver = (supply * 30) / 100;
+  const totalBronze = (supply * 60) / 100;
 
   operations.forEach(function (op) {
     const attributes = op.parameter.value.metadata.attributes;
     const rarity = attributes.o;
     switch (rarity) {
       case "Diamond": {
-        diamantCounter++;
+        diamondCounter++;
         break;
       }
       case "Gold": {
@@ -193,17 +206,34 @@ const Stats = () => {
     }
   });
 
-  console.log("Diamand counter", diamantCounter);
+  const diamsPourcentageRemaining =
+    ((totalDiams - diamondCounter) / (supply - totalRevealed)) * 100;
+
+  const goldPourcentageRemaining =
+    ((totalGold - goldCounter) / (supply - totalRevealed)) * 100;
+
+  const silverPourcentageRemaining =
+    ((totalSilver - silverCounter) / (supply - totalRevealed)) * 100;
+
+  const bronzePourcentageRemaining =
+    ((totalBronze - bronzeCounter) / (supply - totalRevealed)) * 100;
+
+  console.log();
+  console.log("Diamond counter", diamondCounter);
+  console.log("Diamond pourcentage", diamsPourcentageRemaining);
   console.log("Gold counter", goldCounter);
+  console.log("Gold pourcentage", goldPourcentageRemaining);
   console.log("Silver counter", silverCounter);
+  console.log("Silver pourcentage", silverPourcentageRemaining);
   console.log("Zronze counter", bronzeCounter);
+  console.log("Silver pourcentage", bronzePourcentageRemaining);
 
   return null;
 };
 
-const Dogs = () => {
-  const nbDogs = 51;
-  const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}`;
+const Dogs = ({ minId, maxId, supply }: Series) => {
+  const nbDogs = 30;
+  const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
   const { data: operations } = useSWR(url, fetcher);
 
   if (!operations) {
@@ -216,6 +246,33 @@ const Dogs = () => {
 };
 
 export default function Home() {
+  const serie1: Series = {
+    minId: 1,
+    maxId: 8000,
+    supply: 8000,
+  };
+
+  const serie2: Series = {
+    minId: 8001,
+    maxId: 12000,
+    supply: 4000,
+  };
+
+  const [serieSelected, setSerieSelected] = React.useState(serie1);
+
+  const animatedComponents = makeAnimated();
+
+  const handleChange = (e) => {
+    console.log("select serie", e.value);
+    setSerieSelected(e.value);
+  };
+
+  const options = [
+    { value: serie1, label: "Serie 1" },
+    { value: serie2, label: "Serie 2" },
+  ];
+
+  // TODO SELECT SERIE WITH A SELECTOR
   return (
     <>
       <div className={styles.container}>
@@ -238,11 +295,19 @@ export default function Home() {
             <h1 className={styles.title}>
               DogaReveal <small>by Dare</small>
             </h1>
+            <div className={styles.select}>
+              <Select
+                components={animatedComponents}
+                defaultValue={[options[0]]}
+                onChange={handleChange}
+                options={options}
+              />
+            </div>
             <div>
-              <Stats />
+              <Stats {...serieSelected} />
             </div>
             <div className={styles.grid}>
-              <Dogs />
+              <Dogs {...serieSelected} />
             </div>
           </main>
         </SWRConfig>
