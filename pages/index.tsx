@@ -9,14 +9,13 @@ import {
   DAppClient,
   Network,
   NetworkType,
+  ParametersInvalidBeaconError,
   TezosOperationType,
 } from "@airgap/beacon-sdk";
 import {
   faArrowUpRightFromSquare,
-  faDonate,
   faEllipsis,
   faHandHoldingHeart,
-  faHeart,
   faMars,
   faVenus,
 } from "@fortawesome/free-solid-svg-icons";
@@ -121,6 +120,87 @@ const Dog = ({ operation }) => {
   );
 };
 
+const Stats = () => {
+  const url =
+    "https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000";
+  const { data: page1 } = useSWR(url, fetcher);
+  const { data: page2 } = useSWR(
+    () => url + "&lastId=" + page1[page1.length - 1].id,
+    fetcher
+  );
+  const { data: page3 } = useSWR(
+    () => url + "&lastId=" + page2[page2.length - 1].id,
+    fetcher
+  );
+  const { data: page4 } = useSWR(
+    () => url + "&lastId=" + page3[page3.length - 1].id,
+    fetcher
+  );
+  const { data: page5 } = useSWR(
+    () => url + "&lastId=" + page4[page4.length - 1].id,
+    fetcher
+  );
+  const { data: page6 } = useSWR(
+    () => url + "&lastId=" + page5[page5.length - 1].id,
+    fetcher
+  );
+  const { data: page7 } = useSWR(
+    () => url + "&lastId=" + page6[page6.length - 1].id,
+    fetcher
+  );
+
+  if (!page7) {
+    return null;
+  }
+
+  const threesold = 8000;
+
+  const operations = [
+    ...page1,
+    ...page2,
+    ...page3,
+    ...page4,
+    ...page5,
+    ...page6,
+    ...page7,
+  ].filter((op) => op.parameter.value.token_id <= threesold);
+
+  let diamantCounter = 0;
+  let goldCounter = 0;
+  let silverCounter = 0;
+  let bronzeCounter = 0;
+
+  operations.forEach(function (op) {
+    const attributes = op.parameter.value.metadata.attributes;
+    const rarity = attributes.o;
+    switch (rarity) {
+      case "Diamond": {
+        diamantCounter++;
+        break;
+      }
+      case "Gold": {
+        goldCounter++;
+        break;
+      }
+      case "Silver": {
+        silverCounter++;
+        break;
+      }
+      case "Bronze": {
+        bronzeCounter++;
+        break;
+      }
+    }
+  });
+
+  console.log("Diamand counter", diamantCounter);
+  console.log("Gold counter", goldCounter);
+  console.log("Silver counter", silverCounter);
+  console.log("Zronze counter", bronzeCounter);
+
+  return null;
+};
+
 const Dogs = () => {
   const nbDogs = 51;
   const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}`;
@@ -158,7 +238,9 @@ export default function Home() {
             <h1 className={styles.title}>
               DogaReveal <small>by Dare</small>
             </h1>
-
+            <div>
+              <Stats />
+            </div>
             <div className={styles.grid}>
               <Dogs />
             </div>
