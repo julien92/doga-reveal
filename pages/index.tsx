@@ -118,7 +118,12 @@ const Dog = ({ hash }) => {
             <span>{revealDateTime}</span>
           </li>
         </ul>
-        <a className={styles.link} href={dogUrlMarketplace}>
+        <a
+          className={styles.link}
+          target="_blank"
+          href={dogUrlMarketplace}
+          rel="noreferrer"
+        >
           Marketplace <FAIcon icon={faArrowUpRightFromSquare} size={16} />
         </a>
       </div>
