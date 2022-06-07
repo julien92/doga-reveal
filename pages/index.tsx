@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowUpRightFromSquare,
   faEllipsis,
+  faHandHoldingHeart,
+  faHeart,
   faMars,
   faVenus,
 } from "@fortawesome/free-solid-svg-icons";
@@ -94,11 +96,7 @@ const Dog = ({ hash }) => {
             </h3>
           </li>
           <li>
-            <strong>Sexe:</strong>
-            <span>{sexe}</span>
-          </li>
-          <li>
-            <strong>Rarity:</strong>
+            <strong>Rarity Score:</strong>
             <span>{rarityScore}</span>
           </li>
           <li>
@@ -173,6 +171,17 @@ export default function Home() {
             </div>
           </main>
         </SWRConfig>
+        <footer className={styles.footer}>
+          <div>
+            Donate to dogareveal.tez
+            <FontAwesomeIcon
+              width={16}
+              height={16}
+              icon={faHandHoldingHeart}
+              className={styles.donate}
+            />
+          </div>
+        </footer>
       </div>
     </>
   );

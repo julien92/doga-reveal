@@ -53,11 +53,14 @@
   align-items: center;
 }
 
-.footer a {
+.footer {
   display: flex;
   justify-content: center;
+  flex-direction: column;
   align-items: center;
-  flex-grow: 1;
+}
+
+.footer div {
   color: var(--white);
 }
 
@@ -190,4 +193,9 @@
 .logo {
   height: 1em;
   margin-left: 0.5rem;
+}
+
+.donate {
+  margin-left: 0.5rem;
+  color: #f14668;
 }
