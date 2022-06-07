@@ -60,8 +60,9 @@
   align-items: center;
 }
 
-.footer div {
+.footer a {
   color: var(--white);
+  cursor: pointer;
 }
 
 .title {
