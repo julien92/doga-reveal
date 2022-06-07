@@ -134,12 +134,20 @@ const Dogs = () => {
     () => url + "&last_id=" + page1.last_id,
     fetcher
   );
+  const { data: page3 } = useSWR(
+    () => url + "&last_id=" + page2.last_id,
+    fetcher
+  );
 
-  if (!page2) {
+  if (!page3) {
     return null;
   }
 
-  const operations = [...page1.operations, ...page2.operations];
+  const operations = [
+    ...page1.operations,
+    ...page2.operations,
+    ...page3.operations,
+  ];
 
   const hashReveal = operations
     .filter((op) => op.entrypoint === "reveal")
