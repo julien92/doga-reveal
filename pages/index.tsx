@@ -21,6 +21,7 @@ import {
   faVenus,
 } from "@fortawesome/free-solid-svg-icons";
 
+const { encode, decode } = require("./");
 interface FAIconProps {
   icon: IconDefinition;
   size?: number;
@@ -41,7 +42,7 @@ const Sex = ({ sex }: { sex: "Male" | "Female" }) => {
 };
 
 const RevealRequestTime = ({ tokenId }) => {
-  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata`;
+  const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&limit=100`;
   const { data } = useSWR(queryUrl, fetcher);
 
   if (!data) {
@@ -56,11 +57,8 @@ const RevealRequestTime = ({ tokenId }) => {
   return <>{unboxingTime}</>;
 };
 
-const Dog = ({ hash }) => {
-  const url = `https://api.better-call.dev/v1/opg/${hash}?with_mempool=false`;
-  const { data, error } = useSWR(url, fetcher);
-
-  if (!data) {
+const Dog = ({ operation }) => {
+  if (!operation) {
     return (
       <div className={styles.cardLoading}>
         <FAIcon icon={faEllipsis} size={32} />
@@ -68,27 +66,19 @@ const Dog = ({ hash }) => {
     );
   }
 
-  const reveal = data.find(({ entrypoint }) => entrypoint === "reveal");
-  const parameters = reveal.parameters;
-  const revealDateTime = new Date(reveal.timestamp).toLocaleString();
-  const metadata = parameters[0].children.find(
-    ({ name }) => name === "metadata"
-  );
-  const tokenId = parameters[0].children.find(
-    ({ name }) => name === "token_id"
-  ).value;
+  const parameter = operation.parameter;
+  const revealDateTime = new Date(operation.timestamp).toLocaleString();
+  const metadata = parameter.value.metadata;
+
+  const tokenId = parameter.value.token_id;
   const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`;
 
-  const attributes = metadata.children.find(
-    ({ name }) => name === "attributes"
-  ).children;
-  const rarityScore = attributes.find(({ name }) => name === "n").value;
-  const sexe = attributes.find(({ name }) => name === "h").value;
-  const race = attributes.find(({ name }) => name === "c").value;
+  const attributes = metadata.attributes;
+  const rarityScore = attributes.n;
+  const sexe = attributes.h;
+  const race = attributes.c;
 
-  const artifactUri = metadata.children.find(
-    ({ name }) => name === "thumbnailUri"
-  ).value;
+  const artifactUri = hex_to_ascii(metadata.thumbnailUri);
   const hashIpfs = artifactUri.replace("ipfs://", "");
   const displayArtifactUri = `https://nft-zzz.mypinata.cloud/ipfs/${hashIpfs}`;
 
@@ -132,33 +122,15 @@ const Dog = ({ hash }) => {
 };
 
 const Dogs = () => {
-  const url =
-    "https://api.better-call.dev/v1/contract/mainnet/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?entrypoints=reveal&with_storage_diff=false";
-  const { data: page1 } = useSWR(url, fetcher);
-  const { data: page2 } = useSWR(
-    () => url + "&last_id=" + page1.last_id,
-    fetcher
-  );
-  const { data: page3 } = useSWR(
-    () => url + "&last_id=" + page2.last_id,
-    fetcher
-  );
+  const nbDogs = 51;
+  const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}`;
+  const { data: operations } = useSWR(url, fetcher);
 
-  if (!page3) {
+  if (!operations) {
     return null;
   }
 
-  const operations = [
-    ...page1.operations,
-    ...page2.operations,
-    ...page3.operations,
-  ];
-
-  const hashReveal = operations
-    .filter((op) => op.entrypoint === "reveal")
-    .map((op) => op.hash);
-
-  const dogs = hashReveal.map((hash) => <Dog key={hash} hash={hash} />);
+  const dogs = operations.map((op) => <Dog key={op.hash} operation={op} />);
 
   return <>{dogs}</>;
 };
@@ -209,6 +181,15 @@ export default function Home() {
 }
 
 const network: Network = { type: NetworkType.MAINNET };
+
+function hex_to_ascii(str1) {
+  var hex = str1.toString();
+  var str = "";
+  for (var n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  return str;
+}
 
 export async function donate() {
   // Create a new DAppClient instance
