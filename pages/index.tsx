@@ -206,17 +206,25 @@ const Stats = ({ minId, maxId, supply }: Series) => {
     }
   });
 
-  const diamsPourcentageRemaining =
-    ((totalDiams - diamondCounter) / (supply - totalRevealed)) * 100;
+  const arroundTwoDecimal = (value) => {
+    return Math.floor(value * 100) / 100;
+  };
 
-  const goldPourcentageRemaining =
-    ((totalGold - goldCounter) / (supply - totalRevealed)) * 100;
+  const diamsPourcentageRemaining = arroundTwoDecimal(
+    ((totalDiams - diamondCounter) / (supply - totalRevealed)) * 100
+  );
 
-  const silverPourcentageRemaining =
-    ((totalSilver - silverCounter) / (supply - totalRevealed)) * 100;
+  const goldPourcentageRemaining = arroundTwoDecimal(
+    ((totalGold - goldCounter) / (supply - totalRevealed)) * 100
+  );
 
-  const bronzePourcentageRemaining =
-    ((totalBronze - bronzeCounter) / (supply - totalRevealed)) * 100;
+  const silverPourcentageRemaining = arroundTwoDecimal(
+    ((totalSilver - silverCounter) / (supply - totalRevealed)) * 100
+  );
+
+  const bronzePourcentageRemaining = arroundTwoDecimal(
+    ((totalBronze - bronzeCounter) / (supply - totalRevealed)) * 100
+  );
 
   console.log();
   console.log("Diamond counter", diamondCounter);
@@ -228,7 +236,40 @@ const Stats = ({ minId, maxId, supply }: Series) => {
   console.log("Zronze counter", bronzeCounter);
   console.log("Silver pourcentage", bronzePourcentageRemaining);
 
-  return null;
+  return (
+    <div className={styles.stats}>
+      <div>
+        Bronze:
+        <span
+          style={{ color: bronzePourcentageRemaining >= 60 ? "red" : "green" }}
+        >
+          {bronzePourcentageRemaining}%
+        </span>
+      </div>
+      <div>
+        Silver:
+        <span
+          style={{ color: silverPourcentageRemaining > 30 ? "green" : "red" }}
+        >
+          {silverPourcentageRemaining}%
+        </span>
+      </div>
+      <div>
+        Gold:
+        <span style={{ color: goldPourcentageRemaining > 8 ? "green" : "red" }}>
+          {goldPourcentageRemaining}%
+        </span>
+      </div>
+      <div>
+        Diamond:
+        <span
+          style={{ color: diamsPourcentageRemaining > 2 ? "green" : "red" }}
+        >
+          {diamsPourcentageRemaining}%
+        </span>
+      </div>
+    </div>
+  );
 };
 
 const Dogs = ({ minId, maxId, supply }: Series) => {
