@@ -1,55 +1,40 @@
 import Head from "next/head";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
-
-import useSWR, { Fetcher, SWRConfig } from "swr";
-import useSWRInfinite from "swr/infinite";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import useSWR, { SWRConfig } from "swr";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   ColorMode,
   DAppClient,
   Network,
   NetworkType,
-  ParametersInvalidBeaconError,
   TezosOperationType,
 } from "@airgap/beacon-sdk";
 import {
   faArrowUpRightFromSquare,
   faEllipsis,
   faHandHoldingHeart,
-  faMars,
-  faVenus,
 } from "@fortawesome/free-solid-svg-icons";
-import React from "react";
+import { SyntheticEvent, useState } from "react";
+import {
+  createTheme,
+  CssBaseline,
+  Tab,
+  Tabs,
+  ThemeProvider,
+} from "@mui/material";
 
-const { encode, decode } = require("./");
-interface FAIconProps {
-  icon: IconDefinition;
-  size?: number;
-}
+import Stats from "../components/Stats";
+import fetcher from "../fetcher/fetcher";
+import FAIcon from "../components/FAIcon";
+import Sex from "../components/Sex";
 
-interface Series {
+import styles from "../styles/Home.module.css";
+
+export interface SeriesFilter {
   minId: number;
   maxId: number;
   supply: number;
 }
-
-const FAIcon = ({ icon, size = 24 }: FAIconProps) => (
-  <FontAwesomeIcon width={size} height={size} icon={icon} />
-);
-
-const fetcher: Fetcher<any, any> = (url) => fetch(url).then((r) => r.json());
-
-const Sex = ({ sex }: { sex: "Male" | "Female" }) => {
-  return sex === "Male" ? (
-    <FAIcon size={16} icon={faMars} />
-  ) : (
-    <FAIcon size={16} icon={faVenus} />
-  );
-};
 
 const RevealRequestTime = ({ tokenId }) => {
   const queryUrl = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
@@ -136,143 +121,7 @@ const Dog = ({ operation }) => {
   );
 };
 
-const Stats = ({ minId, maxId, supply }: Series) => {
-  const initialSize = 9;
-
-  const { data } = useSWRInfinite(
-    (pageIndex, previousPageData) => {
-      console.log("pageIndex --", pageIndex);
-      console.log("minId", maxId);
-      console.log("maxId", maxId);
-      // reached the end
-      if (previousPageData && !previousPageData.length) {
-        console.log("reached the end");
-        return null;
-      }
-      console.log("previousPageData", previousPageData);
-      // first page, we don't have `previousPageData`
-      if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
-
-      // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
-      &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
-        previousPageData[previousPageData.length - 1].id
-      }`;
-    },
-    fetcher,
-    { initialSize }
-  );
-
-  console.log(data);
-  if (!data) {
-    return null;
-  }
-
-  const operations = data.flatMap((op) => op).reverse();
-  const totalRevealed = operations.length;
-  console.log("Total already revealed", totalRevealed);
-
-  let diamondCounter = 0;
-  let goldCounter = 0;
-  let silverCounter = 0;
-  let bronzeCounter = 0;
-
-  const totalDiams = (supply * 2) / 100;
-  const totalGold = (supply * 8) / 100;
-  const totalSilver = (supply * 30) / 100;
-  const totalBronze = (supply * 60) / 100;
-
-  operations.forEach(function (op) {
-    const attributes = op.parameter.value.metadata.attributes;
-    const rarity = attributes.o;
-    switch (rarity) {
-      case "Diamond": {
-        diamondCounter++;
-        break;
-      }
-      case "Gold": {
-        goldCounter++;
-        break;
-      }
-      case "Silver": {
-        silverCounter++;
-        break;
-      }
-      case "Bronze": {
-        bronzeCounter++;
-        break;
-      }
-    }
-  });
-
-  const arroundTwoDecimal = (value) => {
-    return Math.floor(value * 100) / 100;
-  };
-
-  const diamsPourcentageRemaining = arroundTwoDecimal(
-    ((totalDiams - diamondCounter) / (supply - totalRevealed)) * 100
-  );
-
-  const goldPourcentageRemaining = arroundTwoDecimal(
-    ((totalGold - goldCounter) / (supply - totalRevealed)) * 100
-  );
-
-  const silverPourcentageRemaining = arroundTwoDecimal(
-    ((totalSilver - silverCounter) / (supply - totalRevealed)) * 100
-  );
-
-  const bronzePourcentageRemaining = arroundTwoDecimal(
-    ((totalBronze - bronzeCounter) / (supply - totalRevealed)) * 100
-  );
-
-  console.log();
-  console.log("Diamond counter", diamondCounter);
-  console.log("Diamond pourcentage", diamsPourcentageRemaining);
-  console.log("Gold counter", goldCounter);
-  console.log("Gold pourcentage", goldPourcentageRemaining);
-  console.log("Silver counter", silverCounter);
-  console.log("Silver pourcentage", silverPourcentageRemaining);
-  console.log("Zronze counter", bronzeCounter);
-  console.log("Silver pourcentage", bronzePourcentageRemaining);
-
-  return (
-    <div className={styles.stats}>
-      <div>
-        Bronze:
-        <span
-          style={{ color: bronzePourcentageRemaining >= 60 ? "red" : "green" }}
-        >
-          {bronzePourcentageRemaining}%
-        </span>
-      </div>
-      <div>
-        Silver:
-        <span
-          style={{ color: silverPourcentageRemaining > 30 ? "green" : "red" }}
-        >
-          {silverPourcentageRemaining}%
-        </span>
-      </div>
-      <div>
-        Gold:
-        <span style={{ color: goldPourcentageRemaining > 8 ? "green" : "red" }}>
-          {goldPourcentageRemaining}%
-        </span>
-      </div>
-      <div>
-        Diamond:
-        <span
-          style={{ color: diamsPourcentageRemaining > 2 ? "green" : "red" }}
-        >
-          {diamsPourcentageRemaining}%
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const Dogs = ({ minId, maxId, supply }: Series) => {
+const Dogs = ({ minId, maxId }: Pick<SeriesFilter, "minId" | "maxId">) => {
   const nbDogs = 30;
   const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
   const { data: operations } = useSWR(url, fetcher);
@@ -286,84 +135,94 @@ const Dogs = ({ minId, maxId, supply }: Series) => {
   return <>{dogs}</>;
 };
 
+const theme = createTheme({
+  palette: {
+    mode: "dark",
+  },
+});
+
+const options = [
+  {
+    value: {
+      minId: 1,
+      maxId: 8000,
+      supply: 8000,
+    },
+    label: "Serie 1",
+  },
+  {
+    value: {
+      minId: 8001,
+      maxId: 12000,
+      supply: 4000,
+    },
+    label: "Serie 2",
+  },
+];
+
 export default function Home() {
-  const serie1: Series = {
-    minId: 1,
-    maxId: 8000,
-    supply: 8000,
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleTabChange = (_: SyntheticEvent, value: number) => {
+    console.log("select serie", options[value].value);
+    setActiveTab(value);
   };
 
-  const serie2: Series = {
-    minId: 8001,
-    maxId: 12000,
-    supply: 4000,
-  };
-
-  const [serieSelected, setSerieSelected] = React.useState(serie1);
-
-  const animatedComponents = makeAnimated();
-
-  const handleChange = (e) => {
-    console.log("select serie", e.value);
-    setSerieSelected(e.value);
-  };
-
-  const options = [
-    { value: serie1, label: "Serie 1" },
-    { value: serie2, label: "Serie 2" },
-  ];
-
-  // TODO SELECT SERIE WITH A SELECTOR
   return (
     <>
-      <div className={styles.container}>
-        <Head>
-          <title>Beware of poodle thieves</title>
-          <meta
-            name="description"
-            content="Follow dogami reveal events in live"
-          />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-        <SWRConfig
-          value={{
-            refreshInterval: 60000,
-            fetcher: (resource, init) =>
-              fetch(resource, init).then((res) => res.json()),
-          }}
-        >
-          <main className={styles.main}>
-            <h1 className={styles.title}>
-              DogaReveal <small>by Dare</small>
-            </h1>
-            <div className={styles.select}>
-              <Select
-                components={animatedComponents}
-                defaultValue={[options[0]]}
-                onChange={handleChange}
-                options={options}
-              />
-            </div>
-            <div>
-              <Stats {...serieSelected} />
-            </div>
-            <div className={styles.grid}>
-              <Dogs {...serieSelected} />
-            </div>
-          </main>
-        </SWRConfig>
-        <footer className={styles.footer}>
-          <a onClick={donate}>
-            Donate to dogareveal.tez
-            <FontAwesomeIcon
-              width={16}
-              height={16}
-              icon={faHandHoldingHeart}
-              className={styles.donate}
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className={styles.container}>
+          <Head>
+            <title>Beware of poodle thieves</title>
+            <meta
+              name="description"
+              content="Follow dogami reveal events in live"
             />
-          </a>
-        </footer>
-      </div>
+            <link rel="icon" href="/favicon.ico" />
+          </Head>
+          <SWRConfig
+            value={{
+              refreshInterval: 60000,
+              fetcher: (resource, init) =>
+                fetch(resource, init).then((res) => res.json()),
+            }}
+          >
+            <main className={styles.main}>
+              <h1 className={styles.title}>
+                DogaReveal <small>by Dare</small>
+              </h1>
+              <Tabs
+                className={styles.select}
+                value={activeTab}
+                onChange={handleTabChange}
+                centered
+              >
+                {options.map(({ label }, index) => (
+                  <Tab key={index} label={label} />
+                ))}
+              </Tabs>
+              <div className={styles.stats}>
+                <Stats {...options[activeTab].value} />
+              </div>
+              <div className={styles.grid}>
+                <Dogs {...options[activeTab].value} />
+              </div>
+            </main>
+          </SWRConfig>
+          <footer className={styles.footer}>
+            <a onClick={donate}>
+              Donate to dogareveal.tez
+              <FontAwesomeIcon
+                width={16}
+                height={16}
+                icon={faHandHoldingHeart}
+                className={styles.donate}
+              />
+            </a>
+          </footer>
+        </div>
+      </ThemeProvider>
     </>
   );
 }

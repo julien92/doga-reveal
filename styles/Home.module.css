@@ -202,19 +202,9 @@
 }
 
 .select {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .stats {
-  display: flex;
-  color: white;
-}
-
-.stats div {
-  margin-left: 1rem;
   margin-bottom: 1rem;
-}
-
-.stats span {
-  margin-left: 0.2rem;
 }
