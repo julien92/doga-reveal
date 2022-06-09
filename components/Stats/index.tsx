@@ -1,4 +1,4 @@
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
 import useSWRInfinite from "swr/infinite";
 
 import fetcher from "../../fetcher/fetcher";
@@ -10,19 +10,40 @@ interface PercentProps {
   label: string;
   show: boolean;
   percent: number;
-  red: boolean;
+  color?: "default" | "red" | "green";
+  base: number;
+  showDelta?: boolean;
 }
 
-const Percent = ({ label, show, percent, red }: PercentProps) => {
+const Percent = ({
+  label,
+  show,
+  percent,
+  color = "default",
+  base,
+  showDelta = false,
+}: PercentProps) => {
+  const delta = percent - base;
+
+  const classMap = {
+    default: "",
+    red: styles.red,
+    green: styles.green,
+  };
+
   return (
-    <>
-      {label}:
-      {show ? (
-        <strong className={red ? styles.red : styles.green}>{percent}%</strong>
-      ) : (
-        <CircularProgress size={16} color="secondary" thickness={6} />
-      )}
-    </>
+    <Tooltip
+      title={showDelta ? `${delta > 0 ? "+" : ""}${delta.toFixed(2)}%` : ""}
+    >
+      <div>
+        {label}:
+        {show ? (
+          <strong className={classMap[color]}>{percent}%</strong>
+        ) : (
+          <CircularProgress size={16} color="secondary" thickness={6} />
+        )}
+      </div>
+    </Tooltip>
   );
 };
 
@@ -118,38 +139,38 @@ const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
   return (
     <>
       <div className={styles.stats}>
-        <div className={styles.bronze}>
-          <Percent
-            label="Bronze"
-            percent={bronzePourcentageRemaining}
-            red={bronzePourcentageRemaining >= 60}
-            show={!!data}
-          />
-        </div>
-        <div className={styles.silver}>
-          <Percent
-            label="Silver"
-            percent={silverPourcentageRemaining}
-            red={silverPourcentageRemaining <= 30}
-            show={!!data}
-          />
-        </div>
-        <div className={styles.gold}>
-          <Percent
-            label="Gold"
-            percent={goldPourcentageRemaining}
-            red={goldPourcentageRemaining <= 8}
-            show={!!data}
-          />
-        </div>
-        <div className={styles.diamond}>
-          <Percent
-            label="Diamond"
-            percent={diamsPourcentageRemaining}
-            red={diamsPourcentageRemaining <= 2}
-            show={!!data}
-          />
-        </div>
+        <Percent
+          label="Bronze"
+          percent={bronzePourcentageRemaining}
+          color={bronzePourcentageRemaining <= 60 ? "red" : "green"}
+          show={!!data}
+          base={60}
+          showDelta
+        />
+        <Percent
+          label="Silver"
+          percent={silverPourcentageRemaining}
+          color={silverPourcentageRemaining <= 30 ? "red" : "green"}
+          show={!!data}
+          base={30}
+          showDelta
+        />
+        <Percent
+          label="Gold"
+          percent={goldPourcentageRemaining}
+          color={goldPourcentageRemaining <= 8 ? "red" : "green"}
+          show={!!data}
+          base={8}
+          showDelta
+        />
+        <Percent
+          label="Diamond"
+          percent={diamsPourcentageRemaining}
+          color={diamsPourcentageRemaining <= 2 ? "red" : "green"}
+          show={!!data}
+          base={2}
+          showDelta
+        />
       </div>
     </>
   );
