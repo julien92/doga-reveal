@@ -2,12 +2,13 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  margin: -0.5rem;
 }
 
-.stats > div {
-  --color: rgb(132, 77, 48);
-  margin-left: 1rem;
-  margin-bottom: 1rem;
+.filterButton {
+  all: unset;
+  display: block;
+  margin: 0.5rem;
   color: var(--white);
   display: flex;
   align-items: center;
@@ -16,48 +17,28 @@
   cursor: pointer;
 }
 
-.stats > div > * {
-  margin-left: 0.2rem;
+.filterButton > * {
+  margin-left: 0.25rem;
 }
 
-.disabled {
+.filterButton {
   background-color: rgba(255 255 255 / 10%);
 }
 
-.enabled {
+.filterButton.active,
+.filterButton:hover,
+.filterButton:active {
   background-color: rgba(255 255 255 / 30%);
 }
 
-/* .stats > div::before {
-  content: "";
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  background-color: var(--color);
-  margin-right: 0.5rem;
-} */
-
-.stats > div.bronze {
-  --color: rgb(132, 77, 48);
+.filterButton:focus {
+  box-shadow: 0 0 0 0.0625rem rgba(255 255 255 / 50%);
 }
 
-.stats > div.silver {
-  --color: rgb(62, 159, 196);
-}
-
-.stats > div.gold {
-  --color: rgb(250, 182, 59);
-}
-
-.stats > div.diamond {
-  --color: rgb(20, 68, 255);
-}
-
-.stats > div > .red {
+.stats > .filterButton > .red {
   color: #ef5350;
 }
 
-.stats > div > .green {
+.stats > .filterButton > .green {
   color: #8bc34a;
 }

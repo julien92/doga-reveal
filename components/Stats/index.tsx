@@ -50,13 +50,9 @@ const Percent = ({
   };
 
   return (
-    <div
+    <button
       onClick={handleClick}
-      style={{
-        backgroundColor: enabled
-          ? "rgba(255, 255, 255, 0.3)"
-          : "rgba(255, 255, 255, 0.1)",
-      }}
+      className={`${styles.filterButton} ${enabled ? styles.active : ""}`}
     >
       {label}:
       {show ? (
@@ -64,7 +60,7 @@ const Percent = ({
       ) : (
         <CircularProgress size={16} color="secondary" thickness={6} />
       )}
-    </div>
+    </button>
   );
 };
 
