@@ -1,4 +1,5 @@
 import { CircularProgress, Tooltip } from "@mui/material";
+import { useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import fetcher from "../../fetcher/fetcher";
@@ -13,6 +14,8 @@ interface PercentProps {
   color?: "default" | "red" | "green";
   base: number;
   showDelta?: boolean;
+  tierFilter: string[];
+  onTierFilterChange: (tier: string[]) => {};
 }
 
 const Percent = ({
@@ -22,8 +25,11 @@ const Percent = ({
   color = "default",
   base,
   showDelta = false,
+  tierFilter,
+  onTierFilterChange,
 }: PercentProps) => {
   const delta = percent - base;
+  const [enabled, setEnabled] = useState(false);
 
   const classMap = {
     default: "",
@@ -31,23 +37,38 @@ const Percent = ({
     green: styles.green,
   };
 
+  const handleClick = () => {
+    let newFilter;
+    if (!enabled) {
+      newFilter = [...tierFilter, label];
+    } else {
+      newFilter = tierFilter.filter((op) => op != label);
+    }
+
+    setEnabled(!enabled);
+    onTierFilterChange(newFilter);
+  };
+
   return (
-    <Tooltip
-      title={showDelta ? `${delta > 0 ? "+" : ""}${delta.toFixed(2)}%` : ""}
+    <div
+      onClick={handleClick}
+      style={{
+        backgroundColor: enabled
+          ? "rgba(255, 255, 255, 0.3)"
+          : "rgba(255, 255, 255, 0.1)",
+      }}
     >
-      <div>
-        {label}:
-        {show ? (
-          <strong className={classMap[color]}>{percent}%</strong>
-        ) : (
-          <CircularProgress size={16} color="secondary" thickness={6} />
-        )}
-      </div>
-    </Tooltip>
+      {label}:
+      {show ? (
+        <strong className={classMap[color]}>{percent}%</strong>
+      ) : (
+        <CircularProgress size={16} color="secondary" thickness={6} />
+      )}
+    </div>
   );
 };
 
-const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
+const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
   const initialSize = 9;
 
   const { data } = useSWRInfinite(
@@ -146,6 +167,8 @@ const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
           show={!!data}
           base={60}
           showDelta
+          tierFilter={tierFilter}
+          onTierFilterChange={onTierFilterChange}
         />
         <Percent
           label="Silver"
@@ -154,6 +177,8 @@ const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
           show={!!data}
           base={30}
           showDelta
+          tierFilter={tierFilter}
+          onTierFilterChange={onTierFilterChange}
         />
         <Percent
           label="Gold"
@@ -162,6 +187,8 @@ const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
           show={!!data}
           base={8}
           showDelta
+          tierFilter={tierFilter}
+          onTierFilterChange={onTierFilterChange}
         />
         <Percent
           label="Diamond"
@@ -170,6 +197,8 @@ const Stats = ({ minId, maxId, supply }: SeriesFilter) => {
           show={!!data}
           base={2}
           showDelta
+          tierFilter={tierFilter}
+          onTierFilterChange={onTierFilterChange}
         />
       </div>
     </>
