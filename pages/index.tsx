@@ -157,9 +157,11 @@ const Dogs = ({ minId, maxId }: Pick<SeriesFilter, "minId" | "maxId">) => {
     <>
       <div className={styles.grid}>{dogs}</div>
       <div className={styles.loadMore}>
-        <Button variant="outlined" onClick={() => setSize(size + 1)}>
-          Load More
-        </Button>
+        {dogs.length > 0 && (
+          <Button variant="outlined" onClick={() => setSize(size + 1)}>
+            Load More
+          </Button>
+        )}
       </div>
     </>
   );
