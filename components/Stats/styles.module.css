@@ -25,10 +25,14 @@
   background-color: rgba(255 255 255 / 10%);
 }
 
-.filterButton.active,
-.filterButton:hover,
-.filterButton:active {
+.filterButton.active {
   background-color: rgba(255 255 255 / 30%);
+}
+
+@media (hover: hover) {
+  .filterButton:hover {
+    background-color: rgba(255 255 255 / 30%);
+  }
 }
 
 .filterButton:focus {
