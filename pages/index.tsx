@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import useSWR, { SWRConfig } from "swr";
+import useSWRInfinite from "swr/infinite";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   ColorMode,
@@ -16,6 +17,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { SyntheticEvent, useState } from "react";
 import {
+  Button,
   createTheme,
   CssBaseline,
   Tab,
@@ -122,17 +124,45 @@ const Dog = ({ operation }) => {
 };
 
 const Dogs = ({ minId, maxId }: Pick<SeriesFilter, "minId" | "maxId">) => {
-  const nbDogs = 30;
-  const url = `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${nbDogs}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
-  const { data: operations } = useSWR(url, fetcher);
+  const pageSize = 30;
+  const [pageIndex, setPageIndex] = useState(0);
 
-  if (!operations) {
+  const { data, size, setSize } = useSWRInfinite(
+    (pageIndex, previousPageData) => {
+      // reached the end
+      if (previousPageData && !previousPageData.length) {
+        return null;
+      }
+      // first page, we don't have `previousPageData`
+      if (pageIndex === 0)
+        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+
+      // add the cursor to the API endpoint
+      return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
+        &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
+        previousPageData[previousPageData.length - 1].id
+      }`;
+    },
+    fetcher
+  );
+
+  if (!data) {
     return null;
   }
 
+  const operations = data?.flatMap((op) => op);
   const dogs = operations.map((op) => <Dog key={op.hash} operation={op} />);
 
-  return <>{dogs}</>;
+  return (
+    <>
+      <div className={styles.grid}>{dogs}</div>
+      <div className={styles.loadMore}>
+        <Button variant="outlined" onClick={() => setSize(size + 1)}>
+          Load More
+        </Button>
+      </div>
+    </>
+  );
 };
 
 const theme = createTheme({
@@ -205,9 +235,7 @@ export default function Home() {
               <div className={styles.stats}>
                 <Stats {...options[activeTab].value} />
               </div>
-              <div className={styles.grid}>
-                <Dogs {...options[activeTab].value} />
-              </div>
+              <Dogs {...options[activeTab].value} />
             </main>
           </SWRConfig>
           <footer className={styles.footer}>
