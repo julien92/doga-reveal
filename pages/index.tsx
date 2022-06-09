@@ -123,9 +123,24 @@ const Dog = ({ operation }) => {
   );
 };
 
-const Dogs = ({ minId, maxId }: Pick<SeriesFilter, "minId" | "maxId">) => {
+const Dogs = ({ minId, maxId, tiersFilter }) => {
   const pageSize = 30;
-  const [pageIndex, setPageIndex] = useState(0);
+
+  const tierAvaiable = ["Diamond", "Silver", "Bronze", "Gold"];
+  console.log(tierAvaiable);
+  console.log("tier filter", tiersFilter);
+  let tierParamArray = ["Diamond", "Silver", "Bronze", "Gold"];
+  console.log("before filter", tierParamArray);
+  if (tiersFilter.length) {
+    tierParamArray = tierAvaiable.filter((tier) => tiersFilter.includes(tier));
+  }
+
+  if (tierParamArray.length === 1) {
+    tierParamArray.push(tierParamArray[0]);
+  }
+
+  console.log("after filter", tierParamArray);
+  const tierParam = tierParamArray.join(",");
 
   const { data, size, setSize } = useSWRInfinite(
     (pageIndex, previousPageData) => {
@@ -135,11 +150,11 @@ const Dogs = ({ minId, maxId }: Pick<SeriesFilter, "minId" | "maxId">) => {
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
 
       // add the cursor to the API endpoint
       return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
-        &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
+        &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
     },
@@ -194,11 +209,14 @@ const options = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState(0);
+  const [tierFilter, setTierFilter] = useState([]);
 
   const handleTabChange = (_: SyntheticEvent, value: number) => {
     console.log("select serie", options[value].value);
     setActiveTab(value);
   };
+
+  const tiersFilter = ["Diamond"];
 
   return (
     <>
@@ -235,9 +253,13 @@ export default function Home() {
                 ))}
               </Tabs>
               <div className={styles.stats}>
-                <Stats {...options[activeTab].value} />
+                <Stats
+                  {...options[activeTab].value}
+                  tierFilter={tierFilter}
+                  onTierFilterChange={setTierFilter}
+                />
               </div>
-              <Dogs {...options[activeTab].value} />
+              <Dogs {...options[activeTab].value} tiersFilter={tierFilter} />
             </main>
           </SWRConfig>
           <footer className={styles.footer}>

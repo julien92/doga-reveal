@@ -11,14 +11,21 @@
   color: var(--white);
   display: flex;
   align-items: center;
-  background-color: rgba(255 255 255 / 10%);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
+  cursor: pointer;
 }
 
 .stats > div > * {
   margin-left: 0.2rem;
-  color: rgba(255 255 255 / 60%);
+}
+
+.disabled {
+  background-color: rgba(255 255 255 / 10%);
+}
+
+.enabled {
+  background-color: rgba(255 255 255 / 30%);
 }
 
 /* .stats > div::before {
