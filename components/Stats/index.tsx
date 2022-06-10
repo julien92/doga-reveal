@@ -3,7 +3,7 @@ import { useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import fetcher from "../../fetcher/fetcher";
-import { SeriesFilter } from "../../pages";
+import { SMARTCONTRACT_ADDRESS } from "../../pages";
 
 import styles from "./styles.module.css";
 
@@ -75,10 +75,10 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
+      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
         &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
@@ -128,21 +128,17 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
     return Math.floor(value * 100) / 100;
   };
 
-  const diamsPourcentageRemaining = arroundTwoDecimal(
-    ((totalDiams - diamondCounter) / (supply - totalRevealed)) * 100
-  );
+  const diamsPourcentageRemaining =
+    arroundTwoDecimal((diamondCounter / totalRevealed) * 100) || 0;
 
-  const goldPourcentageRemaining = arroundTwoDecimal(
-    ((totalGold - goldCounter) / (supply - totalRevealed)) * 100
-  );
+  const goldPourcentageRemaining =
+    arroundTwoDecimal((goldCounter / totalRevealed) * 100) || 0;
 
-  const silverPourcentageRemaining = arroundTwoDecimal(
-    ((totalSilver - silverCounter) / (supply - totalRevealed)) * 100
-  );
+  const silverPourcentageRemaining =
+    arroundTwoDecimal((silverCounter / totalRevealed) * 100) || 0;
 
-  const bronzePourcentageRemaining = arroundTwoDecimal(
-    ((totalBronze - bronzeCounter) / (supply - totalRevealed)) * 100
-  );
+  const bronzePourcentageRemaining =
+    arroundTwoDecimal((bronzeCounter / totalRevealed) * 100) || 0;
 
   console.log("Diamond counter", diamondCounter);
   console.log("Diamond pourcentage", diamsPourcentageRemaining);
@@ -159,7 +155,7 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
         <Percent
           label="Bronze"
           percent={bronzePourcentageRemaining}
-          color={bronzePourcentageRemaining <= 60 ? "red" : "green"}
+          color={bronzePourcentageRemaining >= 60 ? "red" : "green"}
           show={!!data}
           base={60}
           showDelta
@@ -169,7 +165,7 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
         <Percent
           label="Silver"
           percent={silverPourcentageRemaining}
-          color={silverPourcentageRemaining <= 30 ? "red" : "green"}
+          color={silverPourcentageRemaining >= 30 ? "red" : "green"}
           show={!!data}
           base={30}
           showDelta
@@ -179,7 +175,7 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
         <Percent
           label="Gold"
           percent={goldPourcentageRemaining}
-          color={goldPourcentageRemaining <= 8 ? "red" : "green"}
+          color={goldPourcentageRemaining >= 8 ? "red" : "green"}
           show={!!data}
           base={8}
           showDelta
@@ -189,7 +185,7 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
         <Percent
           label="Diamond"
           percent={diamsPourcentageRemaining}
-          color={diamsPourcentageRemaining <= 2 ? "red" : "green"}
+          color={diamsPourcentageRemaining >= 2 ? "red" : "green"}
           show={!!data}
           base={2}
           showDelta
