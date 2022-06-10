@@ -32,16 +32,18 @@ import Sex from "../components/Sex";
 
 import styles from "../styles/Home.module.css";
 
-export const SMARTCONTRACT_ADDRESS = "KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA";
+export const SMARTCONTRACT_ADDRESS_V1 = "KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe";
+export const SMARTCONTRACT_ADDRESS_V2 = "KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA";
 
 export interface SeriesFilter {
+  id: number;
   minId: number;
   maxId: number;
   supply: number;
 }
 
 const RevealRequestTime = ({ tokenId }) => {
-  const queryUrl = `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
+  const queryUrl = `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
   const { data } = useSWR(queryUrl, fetcher);
 
   if (!data) {
@@ -152,10 +154,10 @@ const Dogs = ({ minId, maxId, tiersFilter }) => {
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
+        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
+      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
         &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
@@ -193,6 +195,7 @@ const theme = createTheme({
 const options = [
   {
     value: {
+      id: 1,
       minId: 1,
       maxId: 8000,
       supply: 8000,
@@ -201,6 +204,7 @@ const options = [
   },
   {
     value: {
+      id: 2,
       minId: 8001,
       maxId: 12000,
       supply: 4000,
