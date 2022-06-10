@@ -156,12 +156,21 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
     (pageIndex, previousPageData) => {
       // reached the end
       let smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
+      debugger;
       if (
         serieId === 1 &&
         previousPageData &&
         previousPageData.length &&
-        previousPageData[previousPageData.length - 1].id <= LAST_ID_SERIE1_V2
+        (previousPageData[previousPageData.length - 1].id <=
+          LAST_ID_SERIE1_V2 ||
+          previousPageData[previousPageData.length - 1].id == 256620639 ||
+          previousPageData[previousPageData.length - 1].id == 256655605)
       ) {
+        smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
+      }
+
+      // Delete when Diamond ID is know
+      if (serieId === 1 && pageIndex === 0 && tierParam === "Diamond,Diamond") {
         smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
       }
       if (previousPageData && !previousPageData.length) {
@@ -186,12 +195,13 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
 
   const operations = data?.flatMap((op) => op);
   const dogs = operations.map((op) => <Dog key={op.hash} operation={op} />);
+  const displayLoadMore = dogs.length > 0 || serieId == 1;
 
   return (
     <>
       <div className={styles.grid}>{dogs}</div>
       <div className={styles.loadMore}>
-        {dogs.length > 0 && (
+        {displayLoadMore && (
           <Button variant="outlined" onClick={() => setSize(size + 1)}>
             Load More
           </Button>
