@@ -34,16 +34,21 @@ import styles from "../styles/Home.module.css";
 
 export const SMARTCONTRACT_ADDRESS_V1 = "KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe";
 export const SMARTCONTRACT_ADDRESS_V2 = "KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA";
+export const LAST_ID_SERIE1_V2 = 256620294;
 
 export interface SeriesFilter {
-  id: number;
+  serieId: number;
   minId: number;
   maxId: number;
   supply: number;
 }
 
-const RevealRequestTime = ({ tokenId }) => {
-  const queryUrl = `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
+const RevealRequestTime = ({ tokenId, id }) => {
+  const smartContractAddressToUse =
+    id < LAST_ID_SERIE1_V2
+      ? SMARTCONTRACT_ADDRESS_V1
+      : SMARTCONTRACT_ADDRESS_V2;
+  const queryUrl = `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
   const { data } = useSWR(queryUrl, fetcher);
 
   if (!data) {
@@ -72,6 +77,7 @@ const Dog = ({ operation }) => {
     );
   }
 
+  const id = operation.id;
   const parameter = operation.parameter;
   const revealDateTime = new Date(operation.timestamp).toLocaleString();
   const metadata = parameter.value.metadata;
@@ -106,7 +112,7 @@ const Dog = ({ operation }) => {
           <li>
             <strong>Reveal Request Time:</strong>
             <span>
-              <RevealRequestTime tokenId={tokenId} />
+              <RevealRequestTime tokenId={tokenId} id={id} />
             </span>
           </li>
           <li>
@@ -127,7 +133,7 @@ const Dog = ({ operation }) => {
   );
 };
 
-const Dogs = ({ minId, maxId, tiersFilter }) => {
+const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
   const pageSize = 30;
 
   const tierAvaiable = ["Diamond", "Silver", "Bronze", "Gold"];
@@ -149,15 +155,24 @@ const Dogs = ({ minId, maxId, tiersFilter }) => {
   const { data, size, setSize } = useSWRInfinite(
     (pageIndex, previousPageData) => {
       // reached the end
+      let smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
+      if (
+        serieId === 1 &&
+        previousPageData &&
+        previousPageData.length &&
+        previousPageData[previousPageData.length - 1].id <= LAST_ID_SERIE1_V2
+      ) {
+        smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
+      }
       if (previousPageData && !previousPageData.length) {
         return null;
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
+        return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
+      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
         &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
@@ -176,7 +191,7 @@ const Dogs = ({ minId, maxId, tiersFilter }) => {
     <>
       <div className={styles.grid}>{dogs}</div>
       <div className={styles.loadMore}>
-        {dogs.length > 0 && dogs.length == pageSize && (
+        {dogs.length > 0 && (
           <Button variant="outlined" onClick={() => setSize(size + 1)}>
             Load More
           </Button>
@@ -195,7 +210,7 @@ const theme = createTheme({
 const options = [
   {
     value: {
-      id: 1,
+      serieId: 1,
       minId: 1,
       maxId: 8000,
       supply: 8000,
@@ -204,7 +219,7 @@ const options = [
   },
   {
     value: {
-      id: 2,
+      serieId: 2,
       minId: 8001,
       maxId: 12000,
       supply: 4000,
@@ -221,8 +236,6 @@ export default function Home() {
     console.log("select serie", options[value].value);
     setActiveTab(value);
   };
-
-  const tiersFilter = ["Diamond"];
 
   return (
     <>

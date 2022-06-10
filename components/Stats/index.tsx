@@ -3,7 +3,7 @@ import { useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 import fetcher from "../../fetcher/fetcher";
-import { SMARTCONTRACT_ADDRESS_V1 } from "../../pages";
+import { SMARTCONTRACT_ADDRESS_V2 } from "../../pages";
 
 import styles from "./styles.module.css";
 
@@ -24,7 +24,6 @@ const Percent = ({
   percent,
   color = "default",
   base,
-  showDelta = false,
   tierFilter,
   onTierFilterChange,
 }: PercentProps) => {
@@ -64,7 +63,14 @@ const Percent = ({
   );
 };
 
-const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
+const Stats = ({
+  serieId,
+  minId,
+  maxId,
+  supply,
+  tierFilter,
+  onTierFilterChange,
+}) => {
   const initialSize = 9;
 
   const { data } = useSWRInfinite(
@@ -75,10 +81,10 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V1}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
+      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
         &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
@@ -88,7 +94,7 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
   );
 
   const operations = data?.flatMap((op) => op).reverse() || [];
-  const totalRevealed = operations.length;
+  let totalRevealed = operations.length;
   console.log("Total already revealed", totalRevealed);
 
   let diamondCounter = 0;
@@ -124,6 +130,14 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
     }
   });
 
+  if (serieId === 1) {
+    diamondCounter += 142;
+    goldCounter += 564;
+    silverCounter += 2101;
+    bronzeCounter += 4124;
+    totalRevealed += 6931;
+  }
+
   const arroundTwoDecimal = (value) => {
     return Math.floor(value * 100) / 100;
   };
@@ -150,8 +164,8 @@ const Stats = ({ minId, maxId, supply, tierFilter, onTierFilterChange }) => {
   console.log("Gold pourcentage", goldPourcentageRemaining);
   console.log("Silver counter", silverCounter);
   console.log("Silver pourcentage", silverPourcentageRemaining);
-  console.log("Zronze counter", bronzeCounter);
-  console.log("Silver pourcentage", bronzePourcentageRemaining);
+  console.log("Bronze counter", bronzeCounter);
+  console.log("Bronze pourcentage", bronzePourcentageRemaining);
 
   return (
     <>
