@@ -70,8 +70,7 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
         return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}
-          &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
+      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
     },
