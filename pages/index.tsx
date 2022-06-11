@@ -35,6 +35,10 @@ import styles from "../styles/Home.module.css";
 export const SMARTCONTRACT_ADDRESS_V1 = "KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe";
 export const SMARTCONTRACT_ADDRESS_V2 = "KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA";
 export const LAST_ID_SERIE1_V2 = 256620294;
+const LAST_SILVER_SERIE1_V2_ID = 256620639;
+const LAST_GOLD_SERIE1_V2_ID = 256655605;
+// TODO Retrieve Diamond value
+const LAST_DIAMOND_SERIE1_V2_ID = "unknow";
 
 export interface SeriesFilter {
   serieId: number;
@@ -156,15 +160,24 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
     (pageIndex, previousPageData) => {
       // reached the end
       let smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
-      debugger;
       if (
         serieId === 1 &&
         previousPageData &&
         previousPageData.length &&
         (previousPageData[previousPageData.length - 1].id <=
           LAST_ID_SERIE1_V2 ||
-          previousPageData[previousPageData.length - 1].id == 256620639 ||
-          previousPageData[previousPageData.length - 1].id == 256655605)
+          (previousPageData[previousPageData.length - 1].id ==
+            LAST_SILVER_SERIE1_V2_ID &&
+            !tierParamArray.includes("Bronze")) ||
+          (previousPageData[previousPageData.length - 1].id ==
+            LAST_GOLD_SERIE1_V2_ID &&
+            !tierParamArray.includes("Bronze") &&
+            !tierParamArray.includes("Silver")) ||
+          (previousPageData[previousPageData.length - 1].id ==
+            LAST_DIAMOND_SERIE1_V2_ID &&
+            !tierParamArray.includes("Bronze") &&
+            !tierParamArray.includes("Silver") &&
+            !tierParamArray.includes("Gold")))
       ) {
         smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
       }
