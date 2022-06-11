@@ -5,7 +5,6 @@ import {
   NetworkType,
   TezosOperationType,
 } from "@airgap/beacon-sdk";
-import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { BeaconWallet } from "@taquito/beacon-wallet";
@@ -14,9 +13,11 @@ import styles from "./styles.module.css";
 
 const network: Network = { type: NetworkType.MAINNET };
 
+const DOGA_COUNT = 22;
+
 const Donation = () => (
   <>
-    <a onClick={donate22Doga}>
+    <a onClick={() => donateDoga(DOGA_COUNT)}>
       Donate to dogareveal.tez
       <FontAwesomeIcon
         width={16}
@@ -30,7 +31,7 @@ const Donation = () => (
 
 export default Donation;
 
-export async function donateOneXtz() {
+export async function donateXtz() {
   // Create a new DAppClient instance
   const dAppClient = new DAppClient({
     name: "Dogareveal",
@@ -93,7 +94,7 @@ export async function donateOneXtz() {
   await dAppClient.clearActiveAccount();
 }
 
-export async function donate22Doga() {
+export async function donateDoga(dogaCount: number) {
   const Tezos = new TezosToolkit("https://mainnet-tezos.giganode.io");
   const wallet = new BeaconWallet({ name: "DogaReveal" });
 
