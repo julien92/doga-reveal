@@ -1,9 +1,10 @@
-import { CircularProgress, Tooltip } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { useState } from "react";
 import useSWRInfinite from "swr/infinite";
+import { SMARTCONTRACT_ADDRESS_V2, unique_element } from "../../common/util";
 
 import fetcher from "../../fetcher/fetcher";
-import { SMARTCONTRACT_ADDRESS_V2 } from "../../pages";
+import { RevealOperation } from "../../model/RevealOperation";
 
 import styles from "./styles.module.css";
 
@@ -73,7 +74,7 @@ const Stats = ({
 }) => {
   const initialSize = 9;
 
-  const { data } = useSWRInfinite(
+  const { data } = useSWRInfinite<RevealOperation[]>(
     (pageIndex, previousPageData) => {
       // reached the end
       if (previousPageData && !previousPageData.length) {
@@ -93,7 +94,7 @@ const Stats = ({
     { initialSize }
   );
 
-  const operations = data?.flatMap((op) => op).reverse() || [];
+  const operations = unique_element(data?.flatMap((op) => op).reverse() || []);
   let totalRevealed = operations.length;
   console.log("Total already revealed", totalRevealed);
 

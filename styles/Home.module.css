@@ -87,13 +87,6 @@
   text-align: center;
 }
 
-.grid {
-  --columns: 5;
-  display: grid;
-  grid-gap: 1rem;
-  grid-template: auto / repeat(var(--columns), 1fr);
-}
-
 @media screen and (max-width: 1920px) {
   .grid {
     --columns: 3;
