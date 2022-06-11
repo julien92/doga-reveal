@@ -39,7 +39,7 @@ export const LAST_ID_SERIE1_V2 = 256620294;
 const LAST_SILVER_SERIE1_V2_ID = 256620639;
 const LAST_GOLD_SERIE1_V2_ID = 256655605;
 // TODO Retrieve Diamond value
-const LAST_DIAMOND_SERIE1_V2_ID = "unknow";
+const LAST_DIAMOND_SERIE1_V2_ID = 258305575;
 
 export interface SeriesFilter {
   serieId: number;
@@ -176,17 +176,11 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
             !tierParamArray.includes("Silver")) ||
           (previousPageData[previousPageData.length - 1].id ==
             LAST_DIAMOND_SERIE1_V2_ID &&
-            !tierParamArray.includes("Bronze") &&
-            !tierParamArray.includes("Silver") &&
-            !tierParamArray.includes("Gold")))
+            tierParam === "Diamond,Diamond"))
       ) {
         smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
       }
 
-      // Delete when Diamond ID is know
-      if (serieId === 1 && pageIndex === 0 && tierParam === "Diamond,Diamond") {
-        smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
-      }
       if (previousPageData && !previousPageData.length) {
         return null;
       }
