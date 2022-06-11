@@ -8,13 +8,15 @@ import {
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { faHandHoldingHeart } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { BeaconWallet } from "@taquito/beacon-wallet";
+import { TezosToolkit } from "@taquito/taquito";
 import styles from "./styles.module.css";
 
 const network: Network = { type: NetworkType.MAINNET };
 
 const Donation = () => (
   <>
-    <a onClick={donateOneXtz}>
+    <a onClick={donate22Doga}>
       Donate to dogareveal.tez
       <FontAwesomeIcon
         width={16}
@@ -91,4 +93,43 @@ export async function donateOneXtz() {
   await dAppClient.clearActiveAccount();
 }
 
-export async function donate22Doga() {}
+export async function donate22Doga() {
+  const Tezos = new TezosToolkit("https://mainnet-tezos.giganode.io");
+  const wallet = new BeaconWallet({ name: "DogaReveal" });
+
+  Tezos.setWalletProvider(wallet);
+
+  const activeAccount = await wallet.client.getActiveAccount();
+  if (activeAccount) {
+    // User already has account connected, everything is ready
+    // You can now do an operation request, sign request, or send another permission request to switch wallet
+    console.log("Already connected:", activeAccount.address);
+  } else {
+    const permissions = await wallet.client.requestPermissions();
+    console.log("New connection:", permissions.address);
+  }
+
+  Tezos.setWalletProvider(wallet);
+
+  const address = await wallet.getPKH();
+  if (!address) {
+    await wallet.requestPermissions();
+  }
+
+  // Connect to a specific contract on the tezos blockchain.
+  // Make sure the contract is deployed on the network you requested permissions for.
+  const contract = await Tezos.wallet.at(
+    "KT1Ha4yFVeyzw6KRAdkzq6TxDHB97KG4pZe8" // For this example, we use the TZBTC contract on mainnet.
+  );
+
+  // Call a method on the contract. In this case, we use the transfer entrypoint.
+  // Taquito will automatically check if the entrypoint exists and if we call it with the right parameters.
+  // In this case the parameters are [from, to, amount].
+  // This will prepare the contract call and send the request to the connected wallet.
+  const result = await contract.methods
+    .transfer(address, "tz1cHbBAVgPSaTZqL3PMBpDPqYg9EdzrWGEM", 2200000)
+    .send();
+
+  // As soon as the operation is broadcast, you will receive the operation hash
+  return result.opHash;
+}
