@@ -128,7 +128,13 @@ const Dog = ({ operation }) => {
 
   return (
     <div className={styles.card}>
-      <Image src={displayArtifactUri} alt="" width={350} height={350} />
+      <Image
+        src={displayArtifactUri}
+        alt=""
+        width={350}
+        height={350}
+        unoptimized
+      />
       <div className={styles.tokenId}>#{tokenId}</div>
       <div className={styles.cardInfo}>
         <ul className={styles.infoList}>
