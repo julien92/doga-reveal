@@ -1,13 +1,16 @@
 import { Button } from "@mui/material";
 import {
   hex_to_ascii,
-  LAST_DIAMOND_SERIE1_V2_ID,
-  LAST_GOLD_SERIE1_V2_ID,
-  LAST_ID_SERIE1_V2,
-  LAST_SILVER_SERIE1_V2_ID,
+  FIRST_DIAMOND_SERIE1_V2_ID,
+  FIRST_GOLD_SERIE1_V2_ID,
+  FIRST_ID_SERIE1_V2,
+  FIRST_SILVER_SERIE1_V2_ID,
   SMARTCONTRACT_ADDRESS_V1,
   SMARTCONTRACT_ADDRESS_V2,
   unique_element,
+  LAST_DIAMOND_SERIE1_V1_ID,
+  LAST_SILVER_SERIE1_V1_ID,
+  LAST_GOLD_SERIE1_V1_ID,
 } from "../../common/util";
 import fetcher from "../../fetcher/fetcher";
 import { RevealOperation } from "../../model/RevealOperation";
@@ -22,7 +25,7 @@ import styles from "./styles.module.css";
 import Image from "next/image";
 import Sex from "../Sex";
 
-const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
+const Dogs = ({ serieId, minId, maxId, tiersFilter, order }) => {
   const pageSize = 30;
 
   const tierAvaiable = ["Diamond", "Silver", "Bronze", "Gold"];
@@ -42,24 +45,47 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
     (pageIndex, previousPageData) => {
       // reached the end
       let smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
-      if (
-        serieId === 1 &&
-        previousPageData &&
-        previousPageData.length &&
-        (previousPageData[previousPageData.length - 1].id <=
-          LAST_ID_SERIE1_V2 ||
-          (previousPageData[previousPageData.length - 1].id ==
-            LAST_SILVER_SERIE1_V2_ID &&
-            !tierParamArray.includes("Bronze")) ||
-          (previousPageData[previousPageData.length - 1].id ==
-            LAST_GOLD_SERIE1_V2_ID &&
-            !tierParamArray.includes("Bronze") &&
-            !tierParamArray.includes("Silver")) ||
-          (previousPageData[previousPageData.length - 1].id ==
-            LAST_DIAMOND_SERIE1_V2_ID &&
-            tierParam === "Diamond,Diamond"))
-      ) {
-        smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
+      if (serieId === 1) {
+        if (order === "Descending") {
+          if (
+            previousPageData &&
+            previousPageData.length &&
+            (previousPageData[previousPageData.length - 1].id <=
+              FIRST_ID_SERIE1_V2 ||
+              (previousPageData[previousPageData.length - 1].id ==
+                FIRST_SILVER_SERIE1_V2_ID &&
+                !tierParamArray.includes("Bronze")) ||
+              (previousPageData[previousPageData.length - 1].id ==
+                FIRST_GOLD_SERIE1_V2_ID &&
+                !tierParamArray.includes("Bronze") &&
+                !tierParamArray.includes("Silver")) ||
+              (previousPageData[previousPageData.length - 1].id ==
+                FIRST_DIAMOND_SERIE1_V2_ID &&
+                tierParam === "Diamond,Diamond"))
+          ) {
+            smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
+          }
+        } else {
+          smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
+          if (
+            previousPageData &&
+            previousPageData.length &&
+            (previousPageData[previousPageData.length - 1].id >=
+              FIRST_ID_SERIE1_V2 ||
+              (previousPageData[previousPageData.length - 1].id ==
+                LAST_SILVER_SERIE1_V1_ID &&
+                !tierParamArray.includes("Bronze")) ||
+              (previousPageData[previousPageData.length - 1].id ==
+                LAST_GOLD_SERIE1_V1_ID &&
+                !tierParamArray.includes("Bronze") &&
+                !tierParamArray.includes("Silver")) ||
+              (previousPageData[previousPageData.length - 1].id ==
+                LAST_DIAMOND_SERIE1_V1_ID &&
+                tierParam === "Diamond,Diamond"))
+          ) {
+            smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
+          }
+        }
       }
 
       if (previousPageData && !previousPageData.length) {
@@ -67,10 +93,10 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter }) => {
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}`;
+        return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&&sort=${order}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&lastId=${
+      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&&sort=${order}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
     },
@@ -173,7 +199,7 @@ const Dog = ({ operation }) => {
 
 const RevealRequestTime = ({ tokenId, id }) => {
   const smartContractAddressToUse =
-    id < LAST_ID_SERIE1_V2
+    id < FIRST_ID_SERIE1_V2
       ? SMARTCONTRACT_ADDRESS_V1
       : SMARTCONTRACT_ADDRESS_V2;
   const queryUrl = `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;

@@ -15,6 +15,15 @@ import styles from "../styles/Home.module.css";
 import Donation from "../components/Donation";
 
 import Dogs from "../components/Dogs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowDown,
+  faArrowsRotate,
+  faArrowsSplitUpAndLeft,
+  faArrowsUpDown,
+  faArrowUp,
+} from "@fortawesome/free-solid-svg-icons";
+import FAIcon from "../components/FAIcon";
 
 export interface SeriesFilter {
   serieId: number;
@@ -52,6 +61,7 @@ const options = [
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState(0);
+  const [order, setOrder] = useState("Descending");
   const [tierFilter, setTierFilter] = useState([]);
 
   const handleTabChange = (_: SyntheticEvent, value: number) => {
@@ -59,6 +69,16 @@ export default function Home() {
     setActiveTab(value);
   };
 
+  const handleClickOnSwitch = () => {
+    debugger;
+    if (order === "Ascending") {
+      setOrder("Descending");
+    } else {
+      setOrder("Ascending");
+    }
+  };
+
+  const icon = faArrowUp;
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -93,14 +113,31 @@ export default function Home() {
                   <Tab key={index} label={label} />
                 ))}
               </Tabs>
-              <div className={styles.stats}>
-                <Stats
-                  {...options[activeTab].value}
-                  tierFilter={tierFilter}
-                  onTierFilterChange={setTierFilter}
-                />
+              <div className={styles.filterHeader}>
+                <div className={styles.stats}>
+                  <Stats
+                    {...options[activeTab].value}
+                    tierFilter={tierFilter}
+                    onTierFilterChange={setTierFilter}
+                  />
+                </div>
+                <div className={styles.switch}>
+                  <button
+                    className={styles.switchOrder}
+                    onClick={handleClickOnSwitch}
+                  >
+                    <FAIcon
+                      icon={order === "Ascending" ? faArrowUp : faArrowDown}
+                      size={16}
+                    />
+                  </button>
+                </div>
               </div>
-              <Dogs {...options[activeTab].value} tiersFilter={tierFilter} />
+              <Dogs
+                {...options[activeTab].value}
+                tiersFilter={tierFilter}
+                order={order}
+              />
             </main>
           </SWRConfig>
           <footer className={styles.footer}>

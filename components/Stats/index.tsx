@@ -1,3 +1,4 @@
+import { recipientString } from "@airgap/beacon-sdk";
 import { CircularProgress } from "@mui/material";
 import { useState } from "react";
 import useSWRInfinite from "swr/infinite";
@@ -216,4 +217,52 @@ const Stats = ({
   );
 };
 
+// const MintAddress = () => {
+//   const { data } = useSWRInfinite(
+//     (pageIndex, previousPageData) => {
+//       // reached the end
+//       if (previousPageData && !previousPageData.length) {
+//         return null;
+//       }
+//       // first page, we don't have `previousPageData`
+//       if (pageIndex === 0)
+//         return `https://api.tzkt.io/v1/accounts/KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA/operations?type=transaction&entrypoint=mint&limit=1000&status=applied`;
+
+//       // add the cursor to the API endpoint
+//       return `https://api.tzkt.io/v1/accounts/KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA/operations?type=transaction&entrypoint=mint&limit=1000&status=applied&lastId=${
+//         previousPageData[previousPageData.length - 1].id
+//       }`;
+//     },
+//     fetcher,
+//     { initialSize: 8 }
+//   );
+
+//   if (!data) {
+//     return null;
+//   }
+
+//   const mintCountByAddress = new Map<String, number>();
+//   const operations = data?.flatMap((op) => op);
+//   console.log(mintCountByAddress);
+
+//   operations.forEach((op) => {
+//     const address = op.initiator.address;
+//     if (mintCountByAddress.has(address)) {
+//       mintCountByAddress.set(address, mintCountByAddress.get(address) + 1);
+//     } else {
+//       mintCountByAddress.set(address, 1);
+//     }
+//   });
+//   console.log(mintCountByAddress);
+//   let maxMint = 0;
+//   mintCountByAddress.forEach((numberMint: number, address: string) => {
+//     if (numberMint == 2) {
+//       console.log(address);
+//     }
+//     maxMint = numberMint > maxMint ? numberMint : maxMint;
+//   });
+
+//   console.log("Maxmint per wallet ", maxMint);
+//   return null;
+// };
 export default Stats;

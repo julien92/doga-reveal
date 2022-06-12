@@ -3,10 +3,14 @@ import { RevealOperation } from "../model/RevealOperation";
 export const SMARTCONTRACT_ADDRESS_V1 = "KT1HTDtMBRCKoNHjfWEEvXneGQpCfPAt6BRe";
 export const SMARTCONTRACT_ADDRESS_V2 = "KT1TjHyHTnL4VMQQyD75pr3ZTemyPvQxRPpA";
 
-export const LAST_ID_SERIE1_V2 = 256620294;
-export const LAST_SILVER_SERIE1_V2_ID = 256620639;
-export const LAST_GOLD_SERIE1_V2_ID = 256655605;
-export const LAST_DIAMOND_SERIE1_V2_ID = 258305575;
+export const FIRST_ID_SERIE1_V2 = 256620294;
+export const FIRST_SILVER_SERIE1_V2_ID = 256620639;
+export const FIRST_GOLD_SERIE1_V2_ID = 256655605;
+export const FIRST_DIAMOND_SERIE1_V2_ID = 258305575;
+
+export const LAST_SILVER_SERIE1_V1_ID = 248062901;
+export const LAST_GOLD_SERIE1_V1_ID = 247302601;
+export const LAST_DIAMOND_SERIE1_V1_ID = 208971737;
 
 export function hex_to_ascii(str1): string {
   var hex = str1.toString();
