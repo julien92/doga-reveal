@@ -94,7 +94,7 @@ export default function Home() {
           </Head>
           <SWRConfig
             value={{
-              refreshInterval: 60000,
+              refreshInterval: 30000,
               fetcher: (resource, init) =>
                 fetch(resource, init).then((res) => res.json()),
             }}
