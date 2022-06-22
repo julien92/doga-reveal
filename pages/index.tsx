@@ -60,7 +60,7 @@ const options = [
 ];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(1);
   const [order, setOrder] = useState("Descending");
   const [tierFilter, setTierFilter] = useState([]);
 
