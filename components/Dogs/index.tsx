@@ -109,6 +109,8 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter, order }) => {
 
   const operations = unique_element(data?.flatMap((op) => op));
 
+  console.log('data', data);
+  console.log('size', size)
   const dogs = operations.map((op) => <Dog key={op.hash} operation={op} />);
   const displayLoadMore = dogs.length > 0 || serieId == 1;
 
@@ -144,7 +146,10 @@ const Dog = ({ operation }) => {
   const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`;
 
   const attributes = metadata.attributes;
-  const rarityScore = attributes.n;
+  let rarityScore = attributes.n;
+  if(rarityScore > 1000) {
+    rarityScore = rarityScore / 100;
+  }
   const sexe = attributes.h;
   const race = attributes.c;
 
