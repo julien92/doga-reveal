@@ -15,12 +15,8 @@ import styles from "../styles/Home.module.css";
 import Donation from "../components/Donation";
 
 import Dogs from "../components/Dogs";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowDown,
-  faArrowsRotate,
-  faArrowsSplitUpAndLeft,
-  faArrowsUpDown,
   faArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import FAIcon from "../components/FAIcon";
@@ -57,6 +53,15 @@ const options = [
     },
     label: "Serie 2",
   },
+  {
+    value: {
+      serieId: 2,
+      minId: 12001,
+      maxId: 16000,
+      supply: 4000,
+    },
+    label: "Serie 3",
+  }
 ];
 
 export default function Home() {
