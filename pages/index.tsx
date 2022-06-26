@@ -67,7 +67,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState(1);
   const [order, setOrder] = useState("Descending");
   const [tierFilter, setTierFilter] = useState([]);
-  const maintenance = true;
+  const maintenance = false;
 
   const handleTabChange = (_: SyntheticEvent, value: number) => {
     console.log("select serie", options[value].value);
