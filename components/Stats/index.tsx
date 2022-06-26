@@ -83,10 +83,10 @@ const Stats = ({
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
+        return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Descending&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Ascending
+      return `https://api.tzkt.io/v1/accounts/${SMARTCONTRACT_ADDRESS_V2}/operations?type=transaction&entrypoint=reveal&limit=1000&sort=Descending
         &parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
