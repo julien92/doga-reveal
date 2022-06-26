@@ -9,16 +9,15 @@ import {
   ThemeProvider,
 } from "@mui/material";
 
+import Image from "next/image";
+
 import Stats from "../components/Stats";
 
 import styles from "../styles/Home.module.css";
 import Donation from "../components/Donation";
 
 import Dogs from "../components/Dogs";
-import {
-  faArrowDown,
-  faArrowUp,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowDown, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import FAIcon from "../components/FAIcon";
 
 export interface SeriesFilter {
@@ -61,13 +60,14 @@ const options = [
       supply: 4000,
     },
     label: "Serie 3",
-  }
+  },
 ];
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState(1);
   const [order, setOrder] = useState("Descending");
   const [tierFilter, setTierFilter] = useState([]);
+  const maintenance = true;
 
   const handleTabChange = (_: SyntheticEvent, value: number) => {
     console.log("select serie", options[value].value);
@@ -75,7 +75,6 @@ export default function Home() {
   };
 
   const handleClickOnSwitch = () => {
-    debugger;
     if (order === "Ascending") {
       setOrder("Descending");
     } else {
@@ -105,44 +104,60 @@ export default function Home() {
             }}
           >
             <main className={styles.main}>
-              <h1 className={styles.title}>
-                DogaReveal <small>by Dare</small>
-              </h1>
-              <Tabs
-                className={styles.select}
-                value={activeTab}
-                onChange={handleTabChange}
-                centered
-              >
-                {options.map(({ label }, index) => (
-                  <Tab key={index} label={label} />
-                ))}
-              </Tabs>
-              <div className={styles.filterHeader}>
-                <div className={styles.stats}>
-                  <Stats
-                    {...options[activeTab].value}
-                    tierFilter={tierFilter}
-                    onTierFilterChange={setTierFilter}
-                  />
-                </div>
-                <div className={styles.switch}>
-                  <button
-                    className={styles.switchOrder}
-                    onClick={handleClickOnSwitch}
-                  >
-                    <FAIcon
-                      icon={order === "Ascending" ? faArrowUp : faArrowDown}
-                      size={16}
+              {maintenance ? (
+                <>
+                  <h1 className={styles.title}>Maintenance...</h1>
+                  <div className={styles.maintenance}>
+                    <Image
+                      src="/maintenance-white.png"
+                      alt=""
+                      width={1920}
+                      height={1080}
                     />
-                  </button>
-                </div>
-              </div>
-              <Dogs
-                {...options[activeTab].value}
-                tiersFilter={tierFilter}
-                order={order}
-              />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h1 className={styles.title}>
+                    DogaReveal <small>by Dare</small>
+                  </h1>
+                  <Tabs
+                    className={styles.select}
+                    value={activeTab}
+                    onChange={handleTabChange}
+                    centered
+                  >
+                    {options.map(({ label }, index) => (
+                      <Tab key={index} label={label} />
+                    ))}
+                  </Tabs>
+                  <div className={styles.filterHeader}>
+                    <div className={styles.stats}>
+                      <Stats
+                        {...options[activeTab].value}
+                        tierFilter={tierFilter}
+                        onTierFilterChange={setTierFilter}
+                      />
+                    </div>
+                    <div className={styles.switch}>
+                      <button
+                        className={styles.switchOrder}
+                        onClick={handleClickOnSwitch}
+                      >
+                        <FAIcon
+                          icon={order === "Ascending" ? faArrowUp : faArrowDown}
+                          size={16}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                  <Dogs
+                    {...options[activeTab].value}
+                    tiersFilter={tierFilter}
+                    order={order}
+                  />
+                </>
+              )}
             </main>
           </SWRConfig>
           <footer className={styles.footer}>
