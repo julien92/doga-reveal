@@ -313,6 +313,7 @@ const Stats = ({
 
   return (
     <>
+      <b>{Math.round(average[average.length - 1]) - diamsOffset}</b> reveal before Diamond
       <Line options={options} data={dataOffsetGraph} />
       <div className={styles.stats}>
         <Percent
