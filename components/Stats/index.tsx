@@ -9,7 +9,7 @@ import { RevealOperation } from "../../model/RevealOperation";
 
 import styles from "./styles.module.css";
 
-import React from 'react';
+import React from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -19,17 +19,17 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
 ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
 );
 
 interface PercentProps {
@@ -132,32 +132,49 @@ const Stats = ({
   const totalSilver = (supply * 30) / 100;
   const totalBronze = (supply * 60) / 100;
 
+  let diamsOffset = 0;
+  let goldOffset = 0;
+  let silverOffset = 0;
+  let bronzeOffset = 0;
+
   let mapDateRarity = new Map<any, any[]>();
+  let offsetByRarity = new Map<any, any>();
+  let offsetGoldByRarity = new Map<any, any>();
 
   operations.forEach(function (op) {
     const attributes = op.parameter.value.metadata.attributes;
     const date = attributes.a;
-    if(!mapDateRarity.get(date)) {
+    if (!mapDateRarity.get(date)) {
       mapDateRarity.set(date, [0, 0, 0, 0]);
     }
     const rarity = attributes.o;
     switch (rarity) {
       case "Diamond": {
+        goldOffset++;
         mapDateRarity.get(date)[3]++;
         diamondCounter++;
+        offsetByRarity.set(diamondCounter, diamsOffset);
+        diamsOffset = 0;
         break;
       }
       case "Gold": {
+        diamsOffset++;
         mapDateRarity.get(date)[2]++;
         goldCounter++;
+        offsetGoldByRarity.set(goldCounter, goldOffset);
+        goldOffset = 0;
         break;
       }
       case "Silver": {
+        goldOffset++;
+        diamsOffset++;
         mapDateRarity.get(date)[1]++;
         silverCounter++;
         break;
       }
       case "Bronze": {
+        goldOffset++;
+        diamsOffset++;
         mapDateRarity.get(date)[0]++;
         bronzeCounter++;
         break;
@@ -165,7 +182,7 @@ const Stats = ({
     }
   });
 
-  console.log('mapDateRarity', mapDateRarity);
+  console.log("mapDateRarity", mapDateRarity);
 
   if (serieId === 1) {
     diamondCounter += 142;
@@ -208,11 +225,11 @@ const Stats = ({
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: "top" as const,
       },
       title: {
         display: true,
-        text: 'Rarity level by day',
+        text: "Rarity level by day",
       },
     },
   };
@@ -230,39 +247,73 @@ const Stats = ({
     tabDiamond.push(value[3]);
   });
 
+  const xData = [];
+  const yDiams = [];
+  const yGold = [];
+  const average = [];
+  offsetByRarity.forEach((value, key) => {
+    xData.push(key);
+    yDiams.push(value);
+    average.push(yDiams.reduce((a, b) => a + b, 0) / yDiams.length);
+  });
+
+  // offsetGoldByRarity.forEach((value, key) => {
+  //   xData.push(key);
+  //   yGold.push(value);
+  //   average.push(yGold.reduce((a, b) => a + b, 0) / yGold.length);
+  // });
+
   const dataGraph = {
     labels: tabDate,
     datasets: [
       {
-        label: 'Bronze',
+        label: "Bronze",
         data: tabBronze,
-        backgroundColor: 'rgb(255,127,0)',
-        borderColor: "rgb(192,146,70)"
+        backgroundColor: "rgb(255,127,0)",
+        borderColor: "rgb(192,146,70)",
       },
       {
-        label: 'Silver',
+        label: "Silver",
         data: tabSilver,
-        backgroundColor: 'rgb(187,219,235)',
-        borderColor: "rgb(153,174,192)"
+        backgroundColor: "rgb(187,219,235)",
+        borderColor: "rgb(153,174,192)",
       },
       {
-        label: 'Gold',
+        label: "Gold",
         data: tabGold,
-        backgroundColor: 'rgb(228,235,0)',
-        borderColor: "rgb(192,189,51)"
+        backgroundColor: "rgb(228,235,0)",
+        borderColor: "rgb(192,189,51)",
       },
       {
-        label: 'Diamond',
+        label: "Diamond",
         data: tabDiamond,
-        backgroundColor: 'rgb(0,235,222)',
-        borderColor: "rgb(75,192,192)"
+        backgroundColor: "rgb(0,235,222)",
+        borderColor: "rgb(75,192,192)",
+      },
+    ],
+  };
+
+  const dataOffsetGraph = {
+    labels: xData,
+    datasets: [
+      {
+        label: "Diamond",
+        data: yDiams,
+        backgroundColor: "rgb(0,235,222)",
+        borderColor: "rgb(75,192,192)",
+      },
+      {
+        label: "Average",
+        data: average,
+        backgroundColor: "rgb(187,219,235)",
+        borderColor: "rgb(153,174,192)",
       },
     ],
   };
 
   return (
     <>
-      <Line options={options} data={dataGraph} />
+      <Line options={options} data={dataOffsetGraph} />
       <div className={styles.stats}>
         <Percent
           label="Bronze"
