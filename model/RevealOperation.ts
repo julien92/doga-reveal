@@ -21,4 +21,5 @@ interface Metadata {
 interface Attribute {
   // Rarirty Score
   o: string;
+  a: string;
 }
