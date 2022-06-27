@@ -9,6 +9,29 @@ import { RevealOperation } from "../../model/RevealOperation";
 
 import styles from "./styles.module.css";
 
+import React from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
+
 interface PercentProps {
   label: string;
   show: boolean;
@@ -109,28 +132,40 @@ const Stats = ({
   const totalSilver = (supply * 30) / 100;
   const totalBronze = (supply * 60) / 100;
 
+  let mapDateRarity = new Map<any, any[]>();
+
   operations.forEach(function (op) {
     const attributes = op.parameter.value.metadata.attributes;
+    const date = attributes.a;
+    if(!mapDateRarity.get(date)) {
+      mapDateRarity.set(date, [0, 0, 0, 0]);
+    }
     const rarity = attributes.o;
     switch (rarity) {
       case "Diamond": {
+        mapDateRarity.get(date)[3]++;
         diamondCounter++;
         break;
       }
       case "Gold": {
+        mapDateRarity.get(date)[2]++;
         goldCounter++;
         break;
       }
       case "Silver": {
+        mapDateRarity.get(date)[1]++;
         silverCounter++;
         break;
       }
       case "Bronze": {
+        mapDateRarity.get(date)[0]++;
         bronzeCounter++;
         break;
       }
     }
   });
+
+  console.log('mapDateRarity', mapDateRarity);
 
   if (serieId === 1) {
     diamondCounter += 142;
@@ -169,8 +204,65 @@ const Stats = ({
   console.log("Bronze counter", bronzeCounter);
   console.log("Bronze pourcentage", bronzePourcentageRemaining);
 
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Rarity level by day',
+      },
+    },
+  };
+
+  let tabDate = [];
+  let tabBronze = [];
+  let tabSilver = [];
+  let tabGold = [];
+  let tabDiamond = [];
+  mapDateRarity.forEach((value, key) => {
+    tabDate.push(key);
+    tabBronze.push(value[0]);
+    tabSilver.push(value[1]);
+    tabGold.push(value[2]);
+    tabDiamond.push(value[3]);
+  });
+
+  const dataGraph = {
+    labels: tabDate,
+    datasets: [
+      {
+        label: 'Bronze',
+        data: tabBronze,
+        backgroundColor: 'rgb(255,127,0)',
+        borderColor: "rgb(192,146,70)"
+      },
+      {
+        label: 'Silver',
+        data: tabSilver,
+        backgroundColor: 'rgb(187,219,235)',
+        borderColor: "rgb(153,174,192)"
+      },
+      {
+        label: 'Gold',
+        data: tabGold,
+        backgroundColor: 'rgb(228,235,0)',
+        borderColor: "rgb(192,189,51)"
+      },
+      {
+        label: 'Diamond',
+        data: tabDiamond,
+        backgroundColor: 'rgb(0,235,222)',
+        borderColor: "rgb(75,192,192)"
+      },
+    ],
+  };
+
   return (
     <>
+      <Line options={options} data={dataGraph} />
       <div className={styles.stats}>
         <Percent
           label="Bronze"
