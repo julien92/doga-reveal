@@ -28,75 +28,20 @@ import Sex from "../Sex";
 const Dogs = ({ serieId, minId, maxId, tiersFilter, order }) => {
   const pageSize = 30;
 
-  const tierAvaiable = ["Diamond", "Silver", "Bronze", "Gold"];
-  let tierParamArray = ["Diamond", "Silver", "Bronze", "Gold"];
-  if (tiersFilter.length) {
-    tierParamArray = tierAvaiable.filter((tier) => tiersFilter.includes(tier));
-  }
-
-  if (tierParamArray.length === 1) {
-    tierParamArray.push(tierParamArray[0]);
-  }
-
-  console.log("Filter", tierParamArray);
-  const tierParam = tierParamArray.join(",");
-
   const { data, size, setSize } = useSWRInfinite<RevealOperation[]>(
     (pageIndex, previousPageData) => {
       // reached the end
-      let smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
-      if (serieId === 1) {
-        if (order === "Descending") {
-          if (
-            previousPageData &&
-            previousPageData.length &&
-            (previousPageData[previousPageData.length - 1].id <=
-              FIRST_ID_SERIE1_V2 ||
-              (previousPageData[previousPageData.length - 1].id ==
-                FIRST_SILVER_SERIE1_V2_ID &&
-                !tierParamArray.includes("Bronze")) ||
-              (previousPageData[previousPageData.length - 1].id ==
-                FIRST_GOLD_SERIE1_V2_ID &&
-                !tierParamArray.includes("Bronze") &&
-                !tierParamArray.includes("Silver")) ||
-              (previousPageData[previousPageData.length - 1].id ==
-                FIRST_DIAMOND_SERIE1_V2_ID &&
-                tierParam === "Diamond,Diamond"))
-          ) {
-            smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
-          }
-        } else {
-          smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V1;
-          if (
-            previousPageData &&
-            previousPageData.length &&
-            (previousPageData[previousPageData.length - 1].id >=
-              FIRST_ID_SERIE1_V2 ||
-              (previousPageData[previousPageData.length - 1].id ==
-                LAST_SILVER_SERIE1_V1_ID &&
-                !tierParamArray.includes("Bronze")) ||
-              (previousPageData[previousPageData.length - 1].id ==
-                LAST_GOLD_SERIE1_V1_ID &&
-                !tierParamArray.includes("Bronze") &&
-                !tierParamArray.includes("Silver")) ||
-              (previousPageData[previousPageData.length - 1].id ==
-                LAST_DIAMOND_SERIE1_V1_ID &&
-                tierParam === "Diamond,Diamond"))
-          ) {
-            smartContractAddressToUse = SMARTCONTRACT_ADDRESS_V2;
-          }
-        }
-      }
+      let smartContractAddressToUse = "KT1VAEH1BujPVdgTdwDYda8x3LLmFU6PuK2T";
 
       if (previousPageData && !previousPageData.length) {
         return null;
       }
       // first page, we don't have `previousPageData`
       if (pageIndex === 0)
-        return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&&sort=${order}`;
+        return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&sort=${order}`;
 
       // add the cursor to the API endpoint
-      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&parameter.metadata.attributes.o.in=${tierParam}&&sort=${order}&lastId=${
+      return `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=reveal&limit=${pageSize}&parameter.token_id.le=${maxId}&parameter.token_id.ge=${minId}&sort=${order}&lastId=${
         previousPageData[previousPageData.length - 1].id
       }`;
     },
@@ -109,10 +54,12 @@ const Dogs = ({ serieId, minId, maxId, tiersFilter, order }) => {
 
   const operations = unique_element(data?.flatMap((op) => op));
 
-  console.log('data', data);
-  console.log('size', size)
+  console.log("data", data);
+  console.log("size", size);
   const dogs = operations.map((op) => <Dog key={op.hash} operation={op} />);
-  const displayLoadMore = dogs.length > 0 || serieId == 1;
+  const displayLoadMore =
+    operations[operations.length - 1].hash !==
+    "oot2bGaDJnDjQUrMJPxaUp1BfEghNoSbm9gZ3rg1JasvWHKtMWP";
 
   return (
     <>
@@ -143,13 +90,11 @@ const Dog = ({ operation }) => {
   const metadata = parameter.value.metadata;
 
   const tokenId = parameter.value.token_id;
-  const dogUrlMarketplace = `https://marketplace.dogami.com/dog/${tokenId}`;
+  const dogUrlMarketplace = `https://marketplace.dogami.com/swag/${tokenId}`;
 
   const attributes = metadata.attributes;
-  let rarityScore = attributes.n;
-  if(rarityScore > 1000) {
-    rarityScore = rarityScore / 100;
-  }
+  let rarityScore = attributes.Rarity.string_1;
+  let name = attributes.Name.string_1;
   const sexe = attributes.h;
   const race = attributes.c;
 
@@ -170,12 +115,11 @@ const Dog = ({ operation }) => {
       <div className={styles.cardInfo}>
         <ul className={styles.infoList}>
           <li>
-            <h3>
-              {race} <Sex sex={sexe} />
-            </h3>
+            <strong>Name:</strong>
+            <span>{name}</span>
           </li>
           <li>
-            <strong>Rarity Score:</strong>
+            <strong>Rarity:</strong>
             <span>{rarityScore}</span>
           </li>
           <li>
@@ -203,11 +147,8 @@ const Dog = ({ operation }) => {
 };
 
 const RevealRequestTime = ({ tokenId, id }) => {
-  const smartContractAddressToUse =
-    id < FIRST_ID_SERIE1_V2
-      ? SMARTCONTRACT_ADDRESS_V1
-      : SMARTCONTRACT_ADDRESS_V2;
-  const queryUrl = `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter=${tokenId}`;
+  const smartContractAddressToUse = "KT1VAEH1BujPVdgTdwDYda8x3LLmFU6PuK2T";
+  const queryUrl = `https://api.tzkt.io/v1/accounts/${smartContractAddressToUse}/operations?type=transaction&entrypoint=assignMetadata&limit=100&parameter.token_id=${tokenId}`;
   const { data } = useSWR(queryUrl, fetcher);
 
   if (!data) {
@@ -215,7 +156,7 @@ const RevealRequestTime = ({ tokenId, id }) => {
   }
 
   const operationUnboxing = data.find(
-    ({ parameter }) => parameter.value === tokenId
+    ({ parameter }) => parameter.value.token_id === tokenId
   );
 
   if (!operationUnboxing) {

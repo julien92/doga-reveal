@@ -38,17 +38,17 @@ const options = [
     value: {
       serieId: 1,
       minId: 1,
-      maxId: 8000,
-      supply: 8000,
+      maxId: 12000,
+      supply: 12000,
     },
     label: "Serie 1",
   },
   {
     value: {
       serieId: 2,
-      minId: 8001,
+      minId: 1,
       maxId: 12000,
-      supply: 4000,
+      supply: 12000,
     },
     label: "Serie 2",
   },
@@ -119,19 +119,9 @@ export default function Home() {
               ) : (
                 <>
                   <h1 className={styles.title}>
-                    DogaReveal <small>by Dare</small>
+                    StuffReveal <small>by Dare</small>
                   </h1>
-                  <Tabs
-                    className={styles.select}
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    centered
-                  >
-                    {options.map(({ label }, index) => (
-                      <Tab key={index} label={label} />
-                    ))}
-                  </Tabs>
-                  <div className={styles.filterHeader}>
+                  {/* <div className={styles.filterHeader}>
                     <div className={styles.stats}>
                       <Stats
                         {...options[activeTab].value}
@@ -150,7 +140,7 @@ export default function Home() {
                         />
                       </button>
                     </div>
-                  </div>
+                  </div> */}
                   <Dogs
                     {...options[activeTab].value}
                     tiersFilter={tierFilter}
