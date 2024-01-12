@@ -16,7 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "6.1.1",
     "@fortawesome/react-fontawesome": "0.2.0",
     "@mui/material": "5.9.1",
-    "@taquito/beacon-wallet": "13.0.1",
+    "@taquito/beacon-wallet": "17.5.2",
     "@taquito/taquito": "13.0.1",
     "next": "12.2.3",
     "react": "18.2.0",
